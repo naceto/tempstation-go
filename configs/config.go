@@ -7,8 +7,8 @@ import (
 )
 
 type Config struct {
-	Test  string `cfg:"TEST"`
-	Debug bool   `cfg:"DEBUG"`
+	PostgresPasswordFile string `cfg:"POSTGRES_PASSWORD_FILE"`
+	Debug                bool   `cfg:"DEBUG"`
 }
 
 func New() (*Config, error) {
