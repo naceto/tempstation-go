@@ -27,15 +27,15 @@ func main() {
 
 	bs := service.NewBootstrap(logger, cfg)
 	service := service.NewService(bs)
-	logger.Info("Starting service...")
 
+	logger.Info("Starting service...")
 	ctx := context.Background()
 	if err := service.Start(ctx); err != nil {
 		logger.Error("Service initialization failed", "error", err)
 		panic(err)
 	}
-
 	logger.Info("Service started.")
+
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGTERM, syscall.SIGINT, syscall.SIGHUP, syscall.SIGQUIT)
 	sig := <-stop
