@@ -21,3 +21,7 @@ RETURNING *;
 -- name: DeleteUser :exec
 DELETE FROM users
 WHERE id = $1;
+
+-- name: ListSensors :many
+SELECT * FROM sensors
+ORDER BY id;
