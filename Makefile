@@ -6,7 +6,7 @@ build-tools:
 
 .PHONY: run-sqlc
 run-sqlc:
-	cd db && sqlc generate
+	@cd db && sqlc generate
 
 PASSWORD_FILE := postgresql_password.txt
 export POSTGRES_PASSWORD := $(shell cat $(PASSWORD_FILE))
@@ -22,3 +22,7 @@ tern-migration:
 	@echo "Running tern with POSTGRES_PASSWORD=$(POSTGRES_PASSWORD)"
 	@cd db/migrations && \
 	POSTGRES_PASSWORD=$(POSTGRES_PASSWORD) tern new $(name)
+
+.PHONY: run
+run:
+	@air --build.cmd "go build -o bin/tempstation/main cmd/tempstation/main.go" --build.bin "./bin/tempstation/main"
