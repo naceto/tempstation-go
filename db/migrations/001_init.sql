@@ -1,6 +1,5 @@
 -- create users table
-
-CREATE TABLE users(
+CREATE TABLE users (
   id BIGSERIAL PRIMARY KEY,
   name TEXT,
   email TEXT
