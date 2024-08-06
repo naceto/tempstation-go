@@ -19,8 +19,8 @@ run-tern:
 	@cd db/migrations && \
 	POSTGRES_PASSWORD=$(POSTGRES_PASSWORD) tern migrate
 
-.PHONY: run-tern-migration
-tern-migration:
+.PHONY: new-migration
+new-tern-migration:
 	@echo "Running tern with POSTGRES_PASSWORD=$(POSTGRES_PASSWORD)"
 	@cd db/migrations && \
 	POSTGRES_PASSWORD=$(POSTGRES_PASSWORD) tern new $(name)
