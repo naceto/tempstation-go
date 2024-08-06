@@ -1,3 +1,8 @@
+ifneq (,$(wildcard ./.env))
+    include .env
+    export
+endif
+
 .PHONY: build-tools
 build-tools:
 	go install github.com/air-verse/air@latest && \
@@ -8,16 +13,13 @@ build-tools:
 run-sqlc:
 	@cd db && sqlc generate
 
-PASSWORD_FILE := postgresql_password.txt
-export POSTGRES_PASSWORD := $(shell cat $(PASSWORD_FILE))
-
 .PHONY: run-tern
 run-tern:
 	@echo "Running tern with POSTGRES_PASSWORD=$(POSTGRES_PASSWORD)"
 	@cd db/migrations && \
 	POSTGRES_PASSWORD=$(POSTGRES_PASSWORD) tern migrate
 
-.PHONY: tern-migration
+.PHONY: run-tern-migration
 tern-migration:
 	@echo "Running tern with POSTGRES_PASSWORD=$(POSTGRES_PASSWORD)"
 	@cd db/migrations && \
