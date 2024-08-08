@@ -1,7 +1,7 @@
--- Create sensors type enum
+-- create sensors type enum
 CREATE TYPE sensor_type AS ENUM ('dht11', 'dht22');
 
--- Create sensors table
+-- create sensors table
 CREATE TABLE sensors (
   id BIGSERIAL PRIMARY KEY,
   user_id BIGSERIAL REFERENCES users(id),
@@ -10,8 +10,8 @@ CREATE TABLE sensors (
   mac_address VARCHAR(17) NOT NULL UNIQUE
 );
 
--- Create climate data table
-CREATE TABLE climate_data (
+-- create sensor data table
+CREATE TABLE sensor_data (
   id BIGSERIAL PRIMARY KEY,
   sensor_id BIGSERIAL REFERENCES sensors(id),
   temperature NUMERIC(5, 2),
@@ -25,5 +25,5 @@ DROP TYPE sensor_type;
 
 DROP TABLE sensors;
 
-DROP TABLE climate_data;
+DROP TABLE sensor_data;
 
