@@ -7,7 +7,8 @@ endif
 build-tools:
 	go install github.com/air-verse/air@latest && \
 	go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest && \
-	go install github.com/jackc/tern/v2@latest
+	go install github.com/jackc/tern/v2@latest && \
+	go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
 
 .PHONY: run-sqlc
 run-sqlc:
@@ -28,3 +29,10 @@ new-tern-migration:
 .PHONY: run
 run:
 	@air --build.cmd "go build -o bin/tempstation/main cmd/tempstation/main.go" --build.bin "./bin/tempstation/main"
+
+.PHONY: openapi
+openapi:
+	@oapi-codegen --config=api/common/config.yaml api/common/openapi.yaml
+	@oapi-codegen --config=api/generic/config.yaml api/generic/openapi.yaml
+	@oapi-codegen --config=api/sensors/config.yaml api/sensors/openapi.yaml
+

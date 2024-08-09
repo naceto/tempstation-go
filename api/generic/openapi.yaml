@@ -1,0 +1,31 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Tempstation API
+tags:
+  - name: generic
+    description: Generic endpoints
+
+paths:
+  /ping:
+    get:
+      tags:
+        - generic
+      responses:
+        '200':
+          description: Ping response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pong'
+components:
+  schemas:
+    # base types
+    Pong:
+      type: object
+      required:
+        - ping
+      properties:
+        ping:
+          type: string
+          example: pong
