@@ -1,0 +1,61 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Tempstation API
+tags:
+  - name: sensors
+    description: Generic endpoints
+
+paths:
+  /v1/sensors:
+    get:
+      tags:
+        - sensors
+      responses:
+        "200":
+          $ref: "#/components/responses/SensorsResponse"
+        "400":
+          $ref: "../common/openapi.yaml#/components/responses/Error"
+        "500":
+          $ref: "../common/openapi.yaml#/components/responses/Error"
+
+components:
+  requiestBodies:
+
+  responses:
+    SensorsResponse:
+      description: Sensors response.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/SensorsResponse"
+
+  schemas:
+    SensorsResponse:
+      type: object
+      description: List of sensor data.
+      required:
+        - sensors
+      properties:
+        sensors:
+          type: array
+          items:
+            $ref: "#/components/schemas/Sensor"
+
+    Sensor:
+      type: object
+      description: Sensor data.
+      properties:
+        id:
+          type: number
+        sensorId:
+          type: number
+        temperature:
+          type: number
+          format: float
+        humidity:
+          type: number
+          format: float
+        readingTime:
+          type: string
+          format: date-time

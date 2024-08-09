@@ -1,0 +1,18 @@
+components:
+  responses:
+    Error:
+      description: Error.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+  schemas:
+    ErrorResponse:
+      type: object
+      description: ErrorResponse is a standard error response.
+      properties:
+        message:
+          type: string
+        statusCode:
+          type: integer

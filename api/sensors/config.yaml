@@ -1,0 +1,12 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/deepmap/oapi-codegen/HEAD/configuration-schema.json
+package: api
+generate:
+  std-http-server: true
+  models: true
+compatibility:
+  always-prefix-enum-values: true
+output: internal/generated/api/sensors/api.go
+output-options:
+  skip-prune: true
+import-mapping:
+  ../common/openapi.yaml: github.com/naceto/tempstation/internal/generated/api/common
