@@ -7,7 +7,11 @@ import (
 )
 
 type Config struct {
+	PostgresUsername string `cfg:"POSTGRES_USERNAME"`
 	PostgresPassword string `cfg:"POSTGRES_PASSWORD"`
+	PostgresHost     string `cfg:"POSTGRES_HOST"`
+	PostgresPort     string `cfg:"POSTGRES_PORT"`
+	PostgresDBName   string `cfg:"POSTGRES_DATABASE_NAME"`
 	Debug            bool   `cfg:"DEBUG"`
 }
 

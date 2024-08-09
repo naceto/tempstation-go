@@ -12,12 +12,12 @@ paths:
       tags:
         - generic
       responses:
-        '200':
+        "200":
           description: Ping response.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Pong'
+                $ref: "#/components/schemas/Pong"
 components:
   schemas:
     # base types

@@ -47,9 +47,11 @@ components:
       description: Sensor data.
       properties:
         id:
-          type: number
+          type: integer
+          format: int64
         sensorId:
-          type: number
+          type: integer
+          format: int64
         temperature:
           type: number
           format: float

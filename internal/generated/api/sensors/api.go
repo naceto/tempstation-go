@@ -14,9 +14,9 @@ import (
 // Sensor Sensor data.
 type Sensor struct {
 	Humidity    *float32   `json:"humidity,omitempty"`
-	Id          *float32   `json:"id,omitempty"`
+	Id          *int64     `json:"id,omitempty"`
 	ReadingTime *time.Time `json:"readingTime,omitempty"`
-	SensorId    *float32   `json:"sensorId,omitempty"`
+	SensorId    *int64     `json:"sensorId,omitempty"`
 	Temperature *float32   `json:"temperature,omitempty"`
 }
 

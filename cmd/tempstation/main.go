@@ -25,7 +25,8 @@ func main() {
 	level := sdk.IIf(cfg.Debug, slog.LevelDebug, slog.LevelInfo)
 	logLevel.Set(level)
 
-	bs := service.NewBootstrap(logger, cfg)
+	factory := service.NewDependencyFactory()
+	bs := service.NewBootstrap(logger, cfg, factory)
 	service := service.NewService(bs)
 
 	logger.Info("Starting service...")

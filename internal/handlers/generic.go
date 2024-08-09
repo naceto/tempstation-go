@@ -1,4 +1,4 @@
-package resources
+package handlers
 
 import (
 	"encoding/json"
@@ -7,7 +7,8 @@ import (
 	api "github.com/naceto/tempstation/internal/generated/api/generic"
 )
 
-// optional code omitted
+var _ api.ServerInterface = &GenericResource{}
+
 type GenericResource struct{}
 
 func NewGenericResource() *GenericResource {

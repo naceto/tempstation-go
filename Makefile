@@ -36,3 +36,6 @@ openapi:
 	@oapi-codegen --config=api/generic/config.yaml api/generic/openapi.yaml
 	@oapi-codegen --config=api/sensors/config.yaml api/sensors/openapi.yaml
 
+.PHONY: run-dblab
+run-dblab:
+	dblab --host localhost --user tempstation_admin --db tempstation_db --pass $(POSTGRES_PASSWORD) --ssl disable --port 5432 --driver postgres --limit 50
