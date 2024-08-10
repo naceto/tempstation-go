@@ -39,3 +39,13 @@ openapi:
 .PHONY: run-dblab
 run-dblab:
 	dblab --host localhost --user tempstation_admin --db tempstation_db --pass $(POSTGRES_PASSWORD) --ssl disable --port 5432 --driver postgres --limit 50
+
+.PHONY: swagger
+swagger:
+	@echo 'Copying openapi files to swagger.'
+	@cp api/common/openapi.yaml web/common/openapi.yaml
+	@cp api/generic/openapi.yaml web/generic/openapi.yaml
+	@cp api/sensors/openapi.yaml web/sensors/openapi.yaml
+
+# goverter
+# mockery

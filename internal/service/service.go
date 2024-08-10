@@ -10,6 +10,7 @@ import (
 	sensors "github.com/naceto/tempstation/internal/generated/api/sensors"
 	"github.com/naceto/tempstation/internal/handlers"
 	"github.com/naceto/tempstation/internal/service/middleware"
+	"github.com/naceto/tempstation/web"
 )
 
 type Bootstrap struct {
@@ -45,8 +46,8 @@ func (s *Service) Start(ctx context.Context) error {
 	}
 
 	// queries := db.New(s.db)
-
 	root := http.NewServeMux()
+
 	r := handlers.NewGenericResource()
 	generic.HandlerFromMux(r, root)
 
@@ -55,6 +56,7 @@ func (s *Service) Start(ctx context.Context) error {
 	sensors.HandlerFromMux(sen, api)
 	root.Handle("/api/", http.StripPrefix("/api", api))
 
+	root.Handle("/api/swagger-ui/", http.StripPrefix("/api/swagger-ui", http.FileServerFS(web.Content)))
 	logWrapper := middleware.NewLogger(s.bs.logger, root)
 	return http.ListenAndServe(":8080", logWrapper)
 }
