@@ -45,9 +45,7 @@ func (s *Service) Start(ctx context.Context) error {
 		return err
 	}
 
-	// queries := db.New(s.db)
 	root := http.NewServeMux()
-
 	r := handlers.NewGenericResource()
 	generic.HandlerFromMux(r, root)
 
