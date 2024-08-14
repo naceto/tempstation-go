@@ -23,8 +23,28 @@ import (
 	strictnethttp "github.com/oapi-codegen/runtime/strictmiddleware/nethttp"
 )
 
-// Sensor Sensor data.
+// Defines values for SensorType.
+const (
+	SensorTypeDHT11 SensorType = "DHT11"
+	SensorTypeDHT22 SensorType = "DHT22"
+)
+
+// Sensor Sensor specific information.
 type Sensor struct {
+	// Id The resource's ID.
+	Id   externalRef0.ID `json:"id"`
+	Mac  string          `json:"mac"`
+	Name string          `json:"name"`
+
+	// Type Sensor type.
+	Type SensorType `json:"type"`
+
+	// UserId The resource's ID.
+	UserId externalRef0.ID `json:"userId"`
+}
+
+// SensorData Sensor climate data.
+type SensorData struct {
 	Humidity    *float32   `json:"humidity,omitempty"`
 	Id          *int64     `json:"id,omitempty"`
 	ReadingTime *time.Time `json:"readingTime,omitempty"`
@@ -32,15 +52,39 @@ type Sensor struct {
 	Temperature *float32   `json:"temperature,omitempty"`
 }
 
-// SensorsResponse List of sensor data.
-type SensorsResponse struct {
-	Sensors []Sensor `json:"sensors"`
+// SensorPost Sensor specific information.
+type SensorPost struct {
+	Mac  string `json:"mac"`
+	Name string `json:"name"`
+
+	// Type Sensor type.
+	Type SensorType `json:"type"`
+
+	// UserId The resource's ID.
+	UserId externalRef0.ID `json:"userId"`
 }
+
+// SensorType Sensor type.
+type SensorType string
+
+// SensorsDataResponse List of sensor data.
+type SensorsDataResponse struct {
+	Sensors []SensorData `json:"sensors"`
+}
+
+// SensorResponse Sensor specific information.
+type SensorResponse = Sensor
+
+// PostV1SensorsJSONRequestBody defines body for PostV1Sensors for application/json ContentType.
+type PostV1SensorsJSONRequestBody = SensorPost
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 	// (GET /v1/sensors)
 	GetV1Sensors(w http.ResponseWriter, r *http.Request)
+
+	// (POST /v1/sensors)
+	PostV1Sensors(w http.ResponseWriter, r *http.Request)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -58,6 +102,21 @@ func (siw *ServerInterfaceWrapper) GetV1Sensors(w http.ResponseWriter, r *http.R
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetV1Sensors(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// PostV1Sensors operation middleware
+func (siw *ServerInterfaceWrapper) PostV1Sensors(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PostV1Sensors(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -182,11 +241,14 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	}
 
 	m.HandleFunc("GET "+options.BaseURL+"/v1/sensors", wrapper.GetV1Sensors)
+	m.HandleFunc("POST "+options.BaseURL+"/v1/sensors", wrapper.PostV1Sensors)
 
 	return m
 }
 
-type SensorsResponseJSONResponse SensorsResponse
+type SensorResponseJSONResponse Sensor
+
+type SensorsDataResponseJSONResponse SensorsDataResponse
 
 type GetV1SensorsRequestObject struct{}
 
@@ -194,7 +256,9 @@ type GetV1SensorsResponseObject interface {
 	VisitGetV1SensorsResponse(w http.ResponseWriter) error
 }
 
-type GetV1Sensors200JSONResponse struct{ SensorsResponseJSONResponse }
+type GetV1Sensors200JSONResponse struct {
+	SensorsDataResponseJSONResponse
+}
 
 func (response GetV1Sensors200JSONResponse) VisitGetV1SensorsResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -221,10 +285,30 @@ func (response GetV1Sensors500JSONResponse) VisitGetV1SensorsResponse(w http.Res
 	return json.NewEncoder(w).Encode(response)
 }
 
+type PostV1SensorsRequestObject struct {
+	Body *PostV1SensorsJSONRequestBody
+}
+
+type PostV1SensorsResponseObject interface {
+	VisitPostV1SensorsResponse(w http.ResponseWriter) error
+}
+
+type PostV1Sensors200JSONResponse struct{ SensorResponseJSONResponse }
+
+func (response PostV1Sensors200JSONResponse) VisitPostV1SensorsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
 	// (GET /v1/sensors)
 	GetV1Sensors(ctx context.Context, request GetV1SensorsRequestObject) (GetV1SensorsResponseObject, error)
+
+	// (POST /v1/sensors)
+	PostV1Sensors(ctx context.Context, request PostV1SensorsRequestObject) (PostV1SensorsResponseObject, error)
 }
 
 type (
@@ -282,17 +366,51 @@ func (sh *strictHandler) GetV1Sensors(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// PostV1Sensors operation middleware
+func (sh *strictHandler) PostV1Sensors(w http.ResponseWriter, r *http.Request) {
+	var request PostV1SensorsRequestObject
+
+	var body PostV1SensorsJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.PostV1Sensors(ctx, request.(PostV1SensorsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostV1Sensors")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(PostV1SensorsResponseObject); ok {
+		if err := validResponse.VisitPostV1SensorsResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
-	"H4sIAAAAAAAC/6xUQY8TPQz9KyN/3zF0urBwmBsghFbigGDFBe0hO3GnXjVxiD0rVav57yiZ2Wm7bVGR",
-	"uFn2y/Pzi5MnaNlHDhhUoHmChL96QtEP7AgFmtBvNgYSSuQgWCCfUuKUg5aDYtAc2hg31FolDvWDcMg5",
-	"adfobY7+T7iCBv6rd73qsSp1Yfs28cMwDAYcSpsoZjJoxnYLGAx8xyCcZAb/KwkveU+ImCDVsxELyJiJ",
-	"YDZlX9mJIZ7LFUllK1EbnE2uwlzbYzYQE0dMSqPfHkVsV0h1GxEaEE0UumyJqNVePrLbL1NQ7DAViVOK",
-	"7x+w1Z2JxwrHfOWs2mMJ696TI93meMXJW4UGVhu2CnOL0Pv73NQAuQMcBX13vcPN6vJaWUehuyWPByec",
-	"VXylOWtOjFyE3lzaQ9FHTFb7hJeoP2+ZnL/dLyRa8aqSP3k4FktIil4u20rYCbIp2W1RWB5pQgfNz5n2",
-	"7kh4RlJYcdkM0k2u3aKPeWeIQ/X+6w0YeMQk4xRXi+VimftxxGAjQQNvSspAtLouguvHq3pvkA7L0+Pi",
-	"MHHItwKfUX9cTZ7Bi7/j9XJ5bu4Zd/weDVxfcm78mAYDb/8Cnf21nRxYOexlz7wTDC4y5U/TQLC+rOh0",
-	"fLgbfgcAAP//NBuEo1YFAAA=",
+	"H4sIAAAAAAAC/8xWTY/TMBD9K5ZB4hL6sSwcegOKoBKHFVRc0B688bT1qrG9nsmiapX/jsZO05QkIiyL",
+	"xKmpPX5+896M7QeZu8I7C5ZQLh5kgLsSkN45bSAOfAWLLlw5JP6XO0tg46fyfm9yRcbZ6S06y2OY76BQ",
+	"/PU8wEYu5LPpCX6aZnHagqyqKpMaMA/GM5JcyPUOhIUfAmOU0IqUICeU1hPJ0QHQO4uJ3YcQXHgyYhHt",
+	"S43fxy0GTGSV1bI0sU8rTd/WaUYYu3EtArhUpP4Ri3PsQUoojo4kf2qQxp02ux41j9PCoFACSVmtghbA",
+	"cy3kTPrgPASqy7IARLWNoHTwIBcSKRi7ZWmQFJX43un2tLEEWwiRYj3kbm4hJ16xWnbZcR0GQFeGHF6g",
+	"WC2ZxMaFQlGCe3Mpsw760ZguXm0gesjNxuTRSQYzznbTM/p3Hq2WvFmh8l4JrCr6tUkDY+xfc2SVyRIh",
+	"rEbRic15V5oAWi6+cw7N6ppRIlyzuO4xIm3NhTcoYL43hSKIB0NXuF1ZGG3owN+NWZu9U3Qyy5bFTfIq",
+	"yTzC1ABKG7tdmyRrs0IrgpdkYmrdOoyEV2P3ICg8BEVlgDHsq0H5jof1X9Tf/1xXjyqpdc2vVxNewxqA",
+	"LQveYflpPZ/LjH8vLlqgp3QHTt9z9M8GSbhN+ybrKp0mU9MTFDhOxNghpwpQIahDR6gjdFcVjmT/o5WG",
+	"9jy3hsLzyWmcFW+vVjKT9xAwZTKfzCYz3s95sMobuZCv4lAmvaJdJD29n09byWwh1qCLJW2cZavlR6Bv",
+	"81o7+ctVfjGbDeXexPXfTJm8HLM2vRWqTL7+g2jWWG3xTM4qk75usfP0uPHO8zs+pg7DG7beW2cvo8fL",
+	"07qz+9i3Rgf6Aaz2zvCL8NjxzfLquvoZAAD//8gJXgczCgAA",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

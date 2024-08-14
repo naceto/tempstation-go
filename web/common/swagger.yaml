@@ -9,10 +9,15 @@ components:
 
   schemas:
     ErrorResponse:
-      type: object
       description: ErrorResponse is a standard error response.
+      type: object
       properties:
         message:
           type: string
         statusCode:
           type: integer
+
+    ID:
+      description: The resource's ID.
+      type: integer
+      format: int64

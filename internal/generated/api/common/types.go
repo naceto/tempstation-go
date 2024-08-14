@@ -21,16 +21,20 @@ type ErrorResponse struct {
 	StatusCode *int    `json:"statusCode,omitempty"`
 }
 
+// ID The resource's ID.
+type ID = int64
+
 // Error ErrorResponse is a standard error response.
 type Error = ErrorResponse
 
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/2yPQW7rMAxEryLw/6UR77UteoHegJUZR4FNEiSzKAzfvZDlpF10N9LDDGc2KLKqMHE4",
-	"5A2MXIWdjse7mVgTRTiIo0lUXWrBqMLj3YXbn5cbrdjUf6MrZPg3/qSOnfp4pH2c+bDv+wATebGqLQxy",
-	"P3eBBk7Pq8TLlre/TE+cqidMHsgT2pSosfScdIEB1ETJovZ9K7njfITGlxJk8LDKM7QGgfHwN5l+48pB",
-	"M9lR8fySzzuV6HMqXwUyP5ZlAFFi1AoZ2lmMm3eyfwcAAP//XfALhnIBAAA=",
+	"H4sIAAAAAAAC/2yPsW7rMAxFf0Xge0AXI16KDlqbDlmL/oAqM7ECmxRIeigM/3tB20kLpBulg3t4OUPm",
+	"sTIhmUKcQVArk+L6eBNh8SEzGZL5mGodSk5WmNqrMvmf5h7H5NN/wTNE+Nf+WNuNarva3nc/LMvSQIea",
+	"pVSXQdzWHcDBnrmXuMfi/FfohkPRkIJaoi5JF9BZuJ10gAaqcEWxst03omq6rFL7qggR1KTQBbyBJZv0",
+	"lbvfuJDhBWWtuH/x5xWzeeJ0fGz30aPv50kyPmk4Hb3EmWVMtulenqF5tC8NFDozRJqGoQGuSKkWiOAn",
+	"JOt1I8t3AAAA///PahlqvgEAAA==",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

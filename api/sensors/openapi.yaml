@@ -13,25 +13,92 @@ paths:
         - sensors
       responses:
         "200":
-          $ref: "#/components/responses/SensorsResponse"
+          $ref: "#/components/responses/SensorsDataResponse"
         "400":
           $ref: "../common/openapi.yaml#/components/responses/Error"
         "500":
           $ref: "../common/openapi.yaml#/components/responses/Error"
+    post:
+      tags:
+        - sensors
+      requestBody:
+        $ref: "#/components/requestBodies/SensorPost"
+      responses:
+        "200":
+          $ref: "#/components/responses/SensorResponse"
 
 components:
-  requiestBodies:
+  requestBodies:
+    SensorPost:
+      description: The new sensor data to add.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/SensorPost"
 
   responses:
-    SensorsResponse:
+    SensorResponse:
+      description: Sensor info.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Sensor"
+
+    SensorsDataResponse:
       description: Sensors response.
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/SensorsResponse"
+            $ref: "#/components/schemas/SensorsDataResponse"
 
   schemas:
-    SensorsResponse:
+    Sensor:
+      type: object
+      description: Sensor specific information.
+      required:
+        - id
+        - userId
+        - name
+        - mac
+        - type
+      properties:
+        id:
+          $ref: "../common/openapi.yaml#/components/schemas/ID"
+        userId:
+          $ref: "../common/openapi.yaml#/components/schemas/ID"
+        name:
+          type: string
+        mac:
+          type: string
+        type:
+          $ref: "#/components/schemas/SensorType"
+
+    SensorPost:
+      type: object
+      description: Sensor specific information.
+      required:
+        - userId
+        - name
+        - mac
+        - type
+      properties:
+        userId:
+          $ref: "../common/openapi.yaml#/components/schemas/ID"
+        name:
+          type: string
+        mac:
+          type: string
+        type:
+          $ref: "#/components/schemas/SensorType"
+
+    SensorType:
+      description: Sensor type.
+      type: string
+      enum:
+        - DHT11
+        - DHT22
+
+    SensorsDataResponse:
       type: object
       description: List of sensor data.
       required:
@@ -40,11 +107,11 @@ components:
         sensors:
           type: array
           items:
-            $ref: "#/components/schemas/Sensor"
+            $ref: "#/components/schemas/SensorData"
 
-    Sensor:
+    SensorData:
       type: object
-      description: Sensor data.
+      description: Sensor climate data.
       properties:
         id:
           type: integer
