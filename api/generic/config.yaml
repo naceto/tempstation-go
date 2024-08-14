@@ -6,3 +6,7 @@ generate:
 compatibility:
   always-prefix-enum-values: true
 output: internal/generated/api/generic/api.go
+output-options:
+  skip-prune: true
+import-mapping:
+  ../common/openapi.yaml: github.com/naceto/tempstation/internal/generated/api/common

@@ -8,11 +8,13 @@ package api
 import (
 	"fmt"
 	"net/http"
+	"time"
 )
 
 // Pong defines model for Pong.
 type Pong struct {
-	Ping string `json:"ping"`
+	Ping      string     `json:"ping"`
+	Timestamp *time.Time `json:"timestamp,omitempty"`
 }
 
 // ServerInterface represents all server handlers.

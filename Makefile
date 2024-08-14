@@ -35,9 +35,9 @@ openapi:
 	@oapi-codegen --config=api/common/config.yaml api/common/openapi.yaml
 	@oapi-codegen --config=api/generic/config.yaml api/generic/openapi.yaml
 	@oapi-codegen --config=api/sensors/config.yaml api/sensors/openapi.yaml
-	@cp api/common/openapi.yaml web/common/openapi.yaml
-	@cp api/generic/openapi.yaml web/generic/openapi.yaml
-	@cp api/sensors/openapi.yaml web/sensors/openapi.yaml
+	@cp api/common/openapi.yaml web/common/swagger.yaml
+	@cp api/generic/openapi.yaml web/generic/swagger.yaml
+	@cp api/sensors/openapi.yaml web/sensors/swagger.yaml
 
 .PHONY: run-dblab
 run-dblab:

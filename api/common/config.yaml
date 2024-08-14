@@ -2,6 +2,7 @@
 package: common
 generate:
   models: true
+  embedded-spec: true
 output-options:
   skip-prune: true
 output: internal/generated/api/common/types.go

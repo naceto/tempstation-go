@@ -29,3 +29,6 @@ components:
         ping:
           type: string
           example: pong
+        timestamp:
+          type: string
+          format: date-time

@@ -3,22 +3,25 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 
 	api "github.com/naceto/tempstation/internal/generated/api/generic"
+	"github.com/naceto/tempstation/pkg/sdk"
 )
 
-var _ api.ServerInterface = &GenericResource{}
+var _ api.ServerInterface = &Generic{}
 
-type GenericResource struct{}
+type Generic struct{}
 
-func NewGenericResource() *GenericResource {
-	return &GenericResource{}
+func NewGeneric() *Generic {
+	return &Generic{}
 }
 
 // (GET /ping)
-func (res *GenericResource) GetPing(w http.ResponseWriter, r *http.Request) {
+func (g *Generic) GetPing(w http.ResponseWriter, r *http.Request) {
 	resp := api.Pong{
-		Ping: "pong",
+		Ping:      "pong",
+		Timestamp: sdk.Ptr(time.Now().UTC()),
 	}
 
 	w.WriteHeader(http.StatusOK)

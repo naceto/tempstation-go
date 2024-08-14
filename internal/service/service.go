@@ -11,6 +11,7 @@ import (
 	"github.com/naceto/tempstation/internal/handlers"
 	"github.com/naceto/tempstation/internal/service/middleware"
 	"github.com/naceto/tempstation/web"
+	strictMiddleware "github.com/oapi-codegen/nethttp-middleware"
 )
 
 type Bootstrap struct {
@@ -46,15 +47,19 @@ func (s *Service) Start(ctx context.Context) error {
 	}
 
 	root := http.NewServeMux()
-	r := handlers.NewGenericResource()
-	generic.HandlerFromMux(r, root)
+	generic.HandlerFromMux(handlers.NewGeneric(), root)
 
 	api := http.NewServeMux()
-	sen := handlers.NewSensorsResource()
-	sensors.HandlerFromMux(sen, api)
-	root.Handle("/api/", http.StripPrefix("/api", api))
+	ss := sensors.NewStrictHandler(handlers.NewSensors(), nil)
+	sensorsHandler := sensors.HandlerFromMux(ss, api)
+	sSwagger, err := sensors.GetSwagger()
+	if err != nil {
+		return err
+	}
 
+	root.Handle("/api/v1/sensors", http.StripPrefix("/api", strictMiddleware.OapiRequestValidator(sSwagger)(sensorsHandler)))
 	root.Handle("/api/swagger-ui/", http.StripPrefix("/api/swagger-ui", http.FileServerFS(web.Content)))
+
 	logWrapper := middleware.NewLogger(s.bs.logger, root)
 	return http.ListenAndServe(":8080", logWrapper)
 }

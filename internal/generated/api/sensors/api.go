@@ -6,9 +6,21 @@
 package api
 
 import (
+	"bytes"
+	"compress/gzip"
+	"context"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
+	"path"
+	"strings"
 	"time"
+
+	"github.com/getkin/kin-openapi/openapi3"
+	externalRef0 "github.com/naceto/tempstation/internal/generated/api/common"
+	strictnethttp "github.com/oapi-codegen/runtime/strictmiddleware/nethttp"
 )
 
 // Sensor Sensor data.
@@ -27,7 +39,6 @@ type SensorsResponse struct {
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
-
 	// (GET /v1/sensors)
 	GetV1Sensors(w http.ResponseWriter, r *http.Request)
 }
@@ -173,4 +184,193 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc("GET "+options.BaseURL+"/v1/sensors", wrapper.GetV1Sensors)
 
 	return m
+}
+
+type SensorsResponseJSONResponse SensorsResponse
+
+type GetV1SensorsRequestObject struct{}
+
+type GetV1SensorsResponseObject interface {
+	VisitGetV1SensorsResponse(w http.ResponseWriter) error
+}
+
+type GetV1Sensors200JSONResponse struct{ SensorsResponseJSONResponse }
+
+func (response GetV1Sensors200JSONResponse) VisitGetV1SensorsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetV1Sensors400JSONResponse struct{ externalRef0.Error }
+
+func (response GetV1Sensors400JSONResponse) VisitGetV1SensorsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetV1Sensors500JSONResponse externalRef0.ErrorResponse
+
+func (response GetV1Sensors500JSONResponse) VisitGetV1SensorsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+// StrictServerInterface represents all server handlers.
+type StrictServerInterface interface {
+	// (GET /v1/sensors)
+	GetV1Sensors(ctx context.Context, request GetV1SensorsRequestObject) (GetV1SensorsResponseObject, error)
+}
+
+type (
+	StrictHandlerFunc    = strictnethttp.StrictHTTPHandlerFunc
+	StrictMiddlewareFunc = strictnethttp.StrictHTTPMiddlewareFunc
+)
+
+type StrictHTTPServerOptions struct {
+	RequestErrorHandlerFunc  func(w http.ResponseWriter, r *http.Request, err error)
+	ResponseErrorHandlerFunc func(w http.ResponseWriter, r *http.Request, err error)
+}
+
+func NewStrictHandler(ssi StrictServerInterface, middlewares []StrictMiddlewareFunc) ServerInterface {
+	return &strictHandler{ssi: ssi, middlewares: middlewares, options: StrictHTTPServerOptions{
+		RequestErrorHandlerFunc: func(w http.ResponseWriter, r *http.Request, err error) {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+		},
+		ResponseErrorHandlerFunc: func(w http.ResponseWriter, r *http.Request, err error) {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		},
+	}}
+}
+
+func NewStrictHandlerWithOptions(ssi StrictServerInterface, middlewares []StrictMiddlewareFunc, options StrictHTTPServerOptions) ServerInterface {
+	return &strictHandler{ssi: ssi, middlewares: middlewares, options: options}
+}
+
+type strictHandler struct {
+	ssi         StrictServerInterface
+	middlewares []StrictMiddlewareFunc
+	options     StrictHTTPServerOptions
+}
+
+// GetV1Sensors operation middleware
+func (sh *strictHandler) GetV1Sensors(w http.ResponseWriter, r *http.Request) {
+	var request GetV1SensorsRequestObject
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetV1Sensors(ctx, request.(GetV1SensorsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetV1Sensors")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetV1SensorsResponseObject); ok {
+		if err := validResponse.VisitGetV1SensorsResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// Base64 encoded, gzipped, json marshaled Swagger object
+var swaggerSpec = []string{
+	"H4sIAAAAAAAC/6xUQY8TPQz9KyN/3zF0urBwmBsghFbigGDFBe0hO3GnXjVxiD0rVav57yiZ2Wm7bVGR",
+	"uFn2y/Pzi5MnaNlHDhhUoHmChL96QtEP7AgFmtBvNgYSSuQgWCCfUuKUg5aDYtAc2hg31FolDvWDcMg5",
+	"adfobY7+T7iCBv6rd73qsSp1Yfs28cMwDAYcSpsoZjJoxnYLGAx8xyCcZAb/KwkveU+ImCDVsxELyJiJ",
+	"YDZlX9mJIZ7LFUllK1EbnE2uwlzbYzYQE0dMSqPfHkVsV0h1GxEaEE0UumyJqNVePrLbL1NQ7DAViVOK",
+	"7x+w1Z2JxwrHfOWs2mMJ696TI93meMXJW4UGVhu2CnOL0Pv73NQAuQMcBX13vcPN6vJaWUehuyWPByec",
+	"VXylOWtOjFyE3lzaQ9FHTFb7hJeoP2+ZnL/dLyRa8aqSP3k4FktIil4u20rYCbIp2W1RWB5pQgfNz5n2",
+	"7kh4RlJYcdkM0k2u3aKPeWeIQ/X+6w0YeMQk4xRXi+VimftxxGAjQQNvSspAtLouguvHq3pvkA7L0+Pi",
+	"MHHItwKfUX9cTZ7Bi7/j9XJ5bu4Zd/weDVxfcm78mAYDb/8Cnf21nRxYOexlz7wTDC4y5U/TQLC+rOh0",
+	"fLgbfgcAAP//NBuEo1YFAAA=",
+}
+
+// GetSwagger returns the content of the embedded swagger specification file
+// or error if failed to decode
+func decodeSpec() ([]byte, error) {
+	zipped, err := base64.StdEncoding.DecodeString(strings.Join(swaggerSpec, ""))
+	if err != nil {
+		return nil, fmt.Errorf("error base64 decoding spec: %w", err)
+	}
+	zr, err := gzip.NewReader(bytes.NewReader(zipped))
+	if err != nil {
+		return nil, fmt.Errorf("error decompressing spec: %w", err)
+	}
+	var buf bytes.Buffer
+	_, err = buf.ReadFrom(zr)
+	if err != nil {
+		return nil, fmt.Errorf("error decompressing spec: %w", err)
+	}
+
+	return buf.Bytes(), nil
+}
+
+var rawSpec = decodeSpecCached()
+
+// a naive cached of a decoded swagger spec
+func decodeSpecCached() func() ([]byte, error) {
+	data, err := decodeSpec()
+	return func() ([]byte, error) {
+		return data, err
+	}
+}
+
+// Constructs a synthetic filesystem for resolving external references when loading openapi specifications.
+func PathToRawSpec(pathToFile string) map[string]func() ([]byte, error) {
+	res := make(map[string]func() ([]byte, error))
+	if len(pathToFile) > 0 {
+		res[pathToFile] = rawSpec
+	}
+
+	pathPrefix := path.Dir(pathToFile)
+
+	for rawPath, rawFunc := range externalRef0.PathToRawSpec(path.Join(pathPrefix, "../common/openapi.yaml")) {
+		if _, ok := res[rawPath]; ok {
+			// it is not possible to compare functions in golang, so always overwrite the old value
+		}
+		res[rawPath] = rawFunc
+	}
+	return res
+}
+
+// GetSwagger returns the Swagger specification corresponding to the generated code
+// in this file. The external references of Swagger specification are resolved.
+// The logic of resolving external references is tightly connected to "import-mapping" feature.
+// Externally referenced files must be embedded in the corresponding golang packages.
+// Urls can be supported but this task was out of the scope.
+func GetSwagger() (swagger *openapi3.T, err error) {
+	resolvePath := PathToRawSpec("")
+
+	loader := openapi3.NewLoader()
+	loader.IsExternalRefsAllowed = true
+	loader.ReadFromURIFunc = func(loader *openapi3.Loader, url *url.URL) ([]byte, error) {
+		pathToFile := url.String()
+		pathToFile = path.Clean(pathToFile)
+		getSpec, ok := resolvePath[pathToFile]
+		if !ok {
+			err1 := fmt.Errorf("path not found: %s", pathToFile)
+			return nil, err1
+		}
+		return getSpec()
+	}
+	var specData []byte
+	specData, err = rawSpec()
+	if err != nil {
+		return
+	}
+	swagger, err = loader.LoadFromData(specData)
+	if err != nil {
+		return
+	}
+	return
 }

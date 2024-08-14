@@ -8,3 +8,7 @@ func IIf[T any](cond bool, first T, second T) T {
 
 	return second
 }
+
+func Ptr[T any](t T) *T {
+	return &t
+}

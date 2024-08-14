@@ -1,29 +1,28 @@
 package handlers
 
 import (
-	"net/http"
+	"context"
 
 	api "github.com/naceto/tempstation/internal/generated/api/sensors"
-	"github.com/naceto/tempstation/pkg/rest"
 )
 
-var _ api.ServerInterface = &SensorsResource{}
+var _ api.StrictServerInterface = &Sensors{}
 
-type SensorsResource struct{}
+type Sensors struct{}
 
-func NewSensorsResource() *SensorsResource {
-	return &SensorsResource{}
+func NewSensors() *Sensors {
+	return &Sensors{}
 }
 
 // (GET /ping)
-func (s *SensorsResource) GetV1Sensors(w http.ResponseWriter, r *http.Request) {
-	// ctx := r.Context()
-
-	resp := api.SensorsResponse{
-		Sensors: []api.Sensor{
-			{},
+func (s *Sensors) GetV1Sensors(ctx context.Context, request api.GetV1SensorsRequestObject) (api.GetV1SensorsResponseObject, error) {
+	resp := api.GetV1Sensors200JSONResponse{
+		SensorsResponseJSONResponse: api.SensorsResponseJSONResponse{
+			Sensors: []api.Sensor{
+				{},
+			},
 		},
 	}
 
-	rest.EncodeAndReturn(w, 200, resp, nil)
+	return resp, nil
 }
