@@ -26,6 +26,10 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/SensorResponse"
+        "400":
+          $ref: "../common/openapi.yaml#/components/responses/Error"
+        "500":
+          $ref: "../common/openapi.yaml#/components/responses/Error"
 
 components:
   requestBodies:
