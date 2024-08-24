@@ -15,8 +15,8 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 )
 
-// ErrorResponse ErrorResponse is a standard error response.
-type ErrorResponse struct {
+// Error Error is a standard error response.
+type Error struct {
 	Message    *string `json:"message,omitempty"`
 	StatusCode *int    `json:"statusCode,omitempty"`
 }
@@ -24,17 +24,17 @@ type ErrorResponse struct {
 // ID The resource's ID.
 type ID = int64
 
-// Error ErrorResponse is a standard error response.
-type Error = ErrorResponse
+// ErrorResponse Error is a standard error response.
+type ErrorResponse = Error
 
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/2yPsW7rMAxFf0Xge0AXI16KDlqbDlmL/oAqM7ECmxRIeigM/3tB20kLpBulg3t4OUPm",
-	"sTIhmUKcQVArk+L6eBNh8SEzGZL5mGodSk5WmNqrMvmf5h7H5NN/wTNE+Nf+WNuNarva3nc/LMvSQIea",
-	"pVSXQdzWHcDBnrmXuMfi/FfohkPRkIJaoi5JF9BZuJ10gAaqcEWxst03omq6rFL7qggR1KTQBbyBJZv0",
-	"lbvfuJDhBWWtuH/x5xWzeeJ0fGz30aPv50kyPmk4Hb3EmWVMtulenqF5tC8NFDozRJqGoQGuSKkWiOAn",
-	"JOt1I8t3AAAA///PahlqvgEAAA==",
+	"H4sIAAAAAAAC/2xPO27rQAy8isD3gDSC1QQpto1TuA1yAWZFW2tI5IKkisDQ3QNKygdwutkZ7nxukGWq",
+	"wsRukG6gZFXYaH28qIq+7kwQWdiJPSDWOpaMXoS7qwkHZ3mgCQP9VzpDgn/dj3u3qdatrrAsSws9WdZS",
+	"wwTSFneAEPbb7xIB/jhuijXYmCP3qH1DK/c14QAtVJVK6mXbM5EZXtYl/lEJEphr4QtEoqPP9iz9b7mw",
+	"04V0rbRT8n6l7PHjdLxv9TZQ5MusmR6sOR2jxFl0Qt/snh6hvXdfWih8Fkg8j2MLUomxFkgQE9AH25Tl",
+	"MwAA//+GhtjMrgEAAA==",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

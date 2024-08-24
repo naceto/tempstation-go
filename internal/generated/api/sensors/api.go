@@ -29,6 +29,9 @@ const (
 	SensorTypeDHT22 SensorType = "DHT22"
 )
 
+// Error Error is a standard error response.
+type Error = externalRef0.Error
+
 // Sensor Sensor specific information.
 type Sensor struct {
 	// Id The resource's ID.
@@ -80,6 +83,7 @@ type PostV1SensorsJSONRequestBody = SensorPost
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
+
 	// (GET /v1/sensors)
 	GetV1Sensors(w http.ResponseWriter, r *http.Request)
 
@@ -250,7 +254,8 @@ type SensorResponseJSONResponse Sensor
 
 type SensorsDataResponseJSONResponse SensorsDataResponse
 
-type GetV1SensorsRequestObject struct{}
+type GetV1SensorsRequestObject struct {
+}
 
 type GetV1SensorsResponseObject interface {
 	VisitGetV1SensorsResponse(w http.ResponseWriter) error
@@ -267,7 +272,7 @@ func (response GetV1Sensors200JSONResponse) VisitGetV1SensorsResponse(w http.Res
 	return json.NewEncoder(w).Encode(response)
 }
 
-type GetV1Sensors400JSONResponse struct{ externalRef0.Error }
+type GetV1Sensors400JSONResponse struct{ externalRef0.ErrorResponse }
 
 func (response GetV1Sensors400JSONResponse) VisitGetV1SensorsResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -276,7 +281,7 @@ func (response GetV1Sensors400JSONResponse) VisitGetV1SensorsResponse(w http.Res
 	return json.NewEncoder(w).Encode(response)
 }
 
-type GetV1Sensors500JSONResponse externalRef0.ErrorResponse
+type GetV1Sensors500JSONResponse Error
 
 func (response GetV1Sensors500JSONResponse) VisitGetV1SensorsResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -302,7 +307,7 @@ func (response PostV1Sensors200JSONResponse) VisitPostV1SensorsResponse(w http.R
 	return json.NewEncoder(w).Encode(response)
 }
 
-type PostV1Sensors400JSONResponse struct{ externalRef0.Error }
+type PostV1Sensors400JSONResponse struct{ externalRef0.ErrorResponse }
 
 func (response PostV1Sensors400JSONResponse) VisitPostV1SensorsResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -311,7 +316,7 @@ func (response PostV1Sensors400JSONResponse) VisitPostV1SensorsResponse(w http.R
 	return json.NewEncoder(w).Encode(response)
 }
 
-type PostV1Sensors500JSONResponse externalRef0.ErrorResponse
+type PostV1Sensors500JSONResponse Error
 
 func (response PostV1Sensors500JSONResponse) VisitPostV1SensorsResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -322,6 +327,7 @@ func (response PostV1Sensors500JSONResponse) VisitPostV1SensorsResponse(w http.R
 
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
+
 	// (GET /v1/sensors)
 	GetV1Sensors(ctx context.Context, request GetV1SensorsRequestObject) (GetV1SensorsResponseObject, error)
 
@@ -329,10 +335,8 @@ type StrictServerInterface interface {
 	PostV1Sensors(ctx context.Context, request PostV1SensorsRequestObject) (PostV1SensorsResponseObject, error)
 }
 
-type (
-	StrictHandlerFunc    = strictnethttp.StrictHTTPHandlerFunc
-	StrictMiddlewareFunc = strictnethttp.StrictHTTPMiddlewareFunc
-)
+type StrictHandlerFunc = strictnethttp.StrictHTTPHandlerFunc
+type StrictMiddlewareFunc = strictnethttp.StrictHTTPMiddlewareFunc
 
 type StrictHTTPServerOptions struct {
 	RequestErrorHandlerFunc  func(w http.ResponseWriter, r *http.Request, err error)
@@ -417,18 +421,19 @@ func (sh *strictHandler) PostV1Sensors(w http.ResponseWriter, r *http.Request) {
 
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
-	"H4sIAAAAAAAC/8xWT4/TPhD9KpZ/P4lL6J9l4dAbUASVOKyg4oL24I2nrVeN7fVMFlWrfHc0dpqmJBFh",
-	"WQSnpvb4zZv3xn8eZO4K7yxYQrl4kAHuSkB647SBOPAZLLpw5ZD4X+4sgY2fyvu9yRUZZ6e36CyPYb6D",
-	"QvHX/wE2ciH/m57gp2kWpy3IqqoyqQHzYDwjyYVc70BY+CYwRgmtSAlyQmk9kRwdAL2zmNi9C8GFJyMW",
-	"0T7V+H3cYsBEVlktSxP7tNL0pU4zwtiNaxHApSL1h1icYw9SQnF0JPlTgzTutNn1qHmcFgaFEkjKahW0",
-	"AJ5rIWfSB+chUN2WBSCqbQSlgwe5kEjB2C1Lg6SoxLdOt6eNJdhCiBTrIXdzCznxitWyy477MAC6MuTw",
-	"DMVqySQ2LhSKEtyrS5l10I/GdPFqA9FDbjYmj04ymHG2W57RP/NoteRkhcp7JbCq6NcmDYyxf82RVSZL",
-	"hLAaRSduzrvSBNBy8ZVraFbXjBLhmsV1jxEpNTfeoID53hSKIB4MXeF2ZWG0oQN/N2Zt9k7RySxbFjfJ",
-	"qyTzCFMDKG3sdm2SrM0KrQiek4mldfswEl6NzUFQeAiKygBj2FeD8h0P69/ov3+5rx7VUuuaX68mvIY1",
-	"AFsWnGH5YT2fy4x/Ly5aoKdyB07fc/SPBkm4Tfsm6yqdJtOmJyhwnIhxh5w6QIWgDh2hjtBdVTiS/Y9W",
-	"Gtrz3BoKzyencVa8vlrJTN5DwFTJfDKbzDif82CVN3IhX8ShTHpFu0h6ej+ftorZQuxBF1vaOMtWy/dA",
-	"X+a1dvKHq/xiNhuqvYnrv5kyeTlmbXorVJl8+QvRrLHa4pmcVSZ9vcXOy+ONd17f8TF1GE7Yem+dvYwe",
-	"L89fVKY1OrDXwGrvDL82j6dJs7y6rr4HAAD//7zVXgSPCgAA",
+
+	"H4sIAAAAAAAC/8xWTY/TMBD9K5ZB4hL6sSwcegOKoBKHFVRc0B688bT1qrG9nsmiapX/jsZO24QkIloW",
+	"aU91x/abN++NHT/I3BXeWbCEcvEgA9yVgPTBaQMx8B0sunDlkPhf7iyBjUPl/d7kioyz01t0lmOY76BQ",
+	"PHoZYCMX8sX0DD9NszhtQFZVlUkNmAfjGUku5HoHwsIvgXGV0IqUICeU1hPJqwOgdxYTu08huPCtjjwZ",
+	"wYjaxy1OTGSV1bI8eeYE25c6zQhjN65BAJeK1H9i0cYepITi6EjypwY5ucODHhWFQaEEkrJaBS0gxs5I",
+	"mfTBeQhUt2EBiGobS6SDB7mQSMHYLUuBpKjEj043p40l2EKIlOqQu7mFnHjHatllxX0XAF0ZcniFYrVk",
+	"EhsXCkUJ7t2lzDroRyO6eLVh6CE3G5NH5xjMONstz+i/ebJacrJC5b0SWFX0a5MCY+xe88oqkyVCWI2i",
+	"Ew/jXWkCaLn4yTWcdteMEuGaxXWPESk1N9qggPneFIogXgRd4XZlYbShA49PZm32TtHZLFsWN8mrJPMI",
+	"UwMobex2bZKspx1aEbwmE0vr9mEkvBqbg6DwEBSVAcawrwblO17O/9B/z7mvHtVS65pfrya8hzUAWxac",
+	"YfllPZ/LjH8vLhqg53IHbts2+leDJNym+eXqKp0m06EnKHCciPGEnDtAhaAOHaGO0F1VeCX7H600tOe5",
+	"NRSeb07jrHh/tZKZvIeAqZL5ZDaZcT7nwSpv5EK+iaFMekW7SHp6P582itlC7EEXW9o4y1bLz0A/5rV2",
+	"8o9P98VsNlT7aV3/lyiTl2P2tt8GVSbfPmIXa6622JK3yqSvj1y7XD6I7XqPj6nDcOLGe6v1Mnq8XM9I",
+	"qUZ04CyC1d4Zfn0eb5vT9uq6+h0AAP//j0Conp8KAAA=",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

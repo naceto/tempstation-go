@@ -8,7 +8,7 @@ import (
 	"github.com/naceto/tempstation/configs"
 	generic "github.com/naceto/tempstation/internal/generated/api/generic"
 	sensors "github.com/naceto/tempstation/internal/generated/api/sensors"
-	"github.com/naceto/tempstation/internal/handlers"
+	"github.com/naceto/tempstation/internal/resources"
 	"github.com/naceto/tempstation/internal/service/middleware"
 	"github.com/naceto/tempstation/web"
 	strictMiddleware "github.com/oapi-codegen/nethttp-middleware"
@@ -47,10 +47,10 @@ func (s *Service) Start(ctx context.Context) error {
 	}
 
 	root := http.NewServeMux()
-	generic.HandlerFromMux(handlers.NewGeneric(), root)
+	generic.HandlerFromMux(resources.NewGeneric(), root)
 
 	api := http.NewServeMux()
-	ss := sensors.NewStrictHandler(handlers.NewSensors(), nil)
+	ss := sensors.NewStrictHandler(resources.NewSensors(), nil)
 	sensorsHandler := sensors.HandlerFromMux(ss, api)
 	sSwagger, err := sensors.GetSwagger()
 	if err != nil {

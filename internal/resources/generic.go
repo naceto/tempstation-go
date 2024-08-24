@@ -1,11 +1,11 @@
-package handlers
+package resources
 
 import (
-	"encoding/json"
 	"net/http"
 	"time"
 
 	api "github.com/naceto/tempstation/internal/generated/api/generic"
+	"github.com/naceto/tempstation/pkg/rest"
 	"github.com/naceto/tempstation/pkg/sdk"
 )
 
@@ -24,6 +24,5 @@ func (g *Generic) GetPing(w http.ResponseWriter, r *http.Request) {
 		Timestamp: sdk.Ptr(time.Now().UTC()),
 	}
 
-	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(resp)
+	rest.EncodeAndReturn(w, http.StatusOK, resp, nil)
 }

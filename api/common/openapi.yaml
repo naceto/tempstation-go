@@ -1,15 +1,15 @@
 components:
   responses:
-    Error:
+    ErrorResponse:
       description: Error.
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/ErrorResponse"
+            $ref: "#/components/schemas/Error"
 
   schemas:
-    ErrorResponse:
-      description: ErrorResponse is a standard error response.
+    Error:
+      description: Error is a standard error response.
       type: object
       properties:
         message:
