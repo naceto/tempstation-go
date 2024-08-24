@@ -15,9 +15,9 @@ paths:
         "200":
           $ref: "#/components/responses/SensorsDataResponse"
         "400":
-          $ref: "../common/openapi.yaml#/components/responses/Error"
+          $ref: "../common/openapi.yaml#/components/responses/ErrorResponse"
         "500":
-          $ref: "../common/openapi.yaml#/components/responses/Error"
+          $ref: "../common/openapi.yaml#/components/responses/ErrorResponse"
     post:
       tags:
         - sensors
@@ -27,9 +27,9 @@ paths:
         "200":
           $ref: "#/components/responses/SensorResponse"
         "400":
-          $ref: "../common/openapi.yaml#/components/responses/Error"
+          $ref: "../common/openapi.yaml#/components/responses/ErrorResponse"
         "500":
-          $ref: "../common/openapi.yaml#/components/responses/Error"
+          $ref: "../common/openapi.yaml#/components/responses/ErrorResponse"
 
 components:
   requestBodies:
@@ -56,6 +56,8 @@ components:
             $ref: "#/components/schemas/SensorsDataResponse"
 
   schemas:
+    Error:
+      $ref: "../common/openapi.yaml#/components/schemas/Error"
     Sensor:
       type: object
       description: Sensor specific information.
