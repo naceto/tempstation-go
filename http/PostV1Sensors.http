@@ -1,0 +1,16 @@
+@contentType = application/json
+
+###############################
+### Request: POST /v1/sensors
+###############################
+
+
+POST http://192.168.68.94:8080/api/v1/sensors
+Content-Type: {{contentType}}
+
+{
+    "userId": 1234,
+    "name": "name",
+    "mac": "mac",
+    "type": "DHT11"
+}

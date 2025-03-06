@@ -1,0 +1,11 @@
+@contentType = application/json
+
+##############################
+### Request: GET /v1/sensors
+##############################
+
+
+GET http://192.168.68.94:8080/api/v1/sensors
+Content-Type: {{contentType}}
+
+

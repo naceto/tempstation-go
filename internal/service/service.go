@@ -8,8 +8,10 @@ import (
 	"github.com/naceto/tempstation/configs"
 	generic "github.com/naceto/tempstation/internal/generated/api/generic"
 	sensors "github.com/naceto/tempstation/internal/generated/api/sensors"
+	"github.com/naceto/tempstation/internal/generated/db"
 	"github.com/naceto/tempstation/internal/resources"
 	"github.com/naceto/tempstation/internal/service/middleware"
+	"github.com/naceto/tempstation/internal/storage"
 	"github.com/naceto/tempstation/web"
 	strictMiddleware "github.com/oapi-codegen/nethttp-middleware"
 )
@@ -46,11 +48,18 @@ func (s *Service) Start(ctx context.Context) error {
 		return err
 	}
 
+	queries := db.New(s.db)
+	store := storage.NewStorage(queries)
+
+	// Resources
+	genericResource := resources.NewGeneric()
+	sensorsResource := resources.NewSensors(s.bs.logger, store)
+
 	root := http.NewServeMux()
-	generic.HandlerFromMux(resources.NewGeneric(), root)
+	generic.HandlerFromMux(genericResource, root)
 
 	api := http.NewServeMux()
-	ss := sensors.NewStrictHandler(resources.NewSensors(), nil)
+	ss := sensors.NewStrictHandler(sensorsResource, nil)
 	sensorsHandler := sensors.HandlerFromMux(ss, api)
 	sSwagger, err := sensors.GetSwagger()
 	if err != nil {
@@ -69,6 +78,7 @@ func (s *Service) Stop(ctx context.Context) error {
 		err := s.db.Close()
 		if err != nil {
 			s.bs.logger.Error("Closing DB connection failed", "error", err)
+			return err
 		}
 	}
 

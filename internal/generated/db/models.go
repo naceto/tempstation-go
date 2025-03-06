@@ -52,20 +52,20 @@ func (ns NullSensorType) Value() (driver.Value, error) {
 	return string(ns.SensorType), nil
 }
 
-type ClimateDatum struct {
-	ID          int64
-	SensorID    sql.NullInt64
-	Temperature sql.NullString
-	Humidity    sql.NullString
-	ReadingTime sql.NullTime
-}
-
 type Sensor struct {
 	ID         int64
 	UserID     sql.NullInt64
 	Name       string
 	Type       SensorType
 	MacAddress string
+}
+
+type SensorDatum struct {
+	ID          int64
+	SensorID    sql.NullInt64
+	Temperature sql.NullString
+	Humidity    sql.NullString
+	ReadingTime sql.NullTime
 }
 
 type User struct {
