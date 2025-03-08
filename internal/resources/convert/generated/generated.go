@@ -10,21 +10,44 @@ import (
 
 type ConvertImpl struct{}
 
-func (c *ConvertImpl) CreateUserApiModelToDbModel(source users.PostV1UsersRequestObject) models.CreateUser {
-	var modelsCreateUser models.CreateUser
-	var pString *string
-	if source.Body != nil {
-		pString = &source.Body.Name
+func (c *ConvertImpl) CreateUserAPIModelToDbModel(source *users.PostV1UsersRequestObject) *models.CreateUser {
+	var pModelsCreateUser *models.CreateUser
+	if source != nil {
+		var modelsCreateUser models.CreateUser
+		var pString *string
+		if (*source).Body != nil {
+			pString = &(*source).Body.Name
+		}
+		if pString != nil {
+			modelsCreateUser.Name = *pString
+		}
+		var pString2 *string
+		if (*source).Body != nil {
+			pString2 = &(*source).Body.Email
+		}
+		if pString2 != nil {
+			modelsCreateUser.Email = *pString2
+		}
+		pModelsCreateUser = &modelsCreateUser
 	}
-	if pString != nil {
-		modelsCreateUser.Name = *pString
+	return pModelsCreateUser
+}
+func (c *ConvertImpl) CreateUserDbModelToAPIModel(source *models.User) *users.PostV1Users200JSONResponse {
+	var pApiPostV1Users200JSONResponse *users.PostV1Users200JSONResponse
+	if source != nil {
+		var apiPostV1Users200JSONResponse users.PostV1Users200JSONResponse
+		apiPostV1Users200JSONResponse.UserResponseJSONResponse = c.CreateUserDbModelToAPIModelEmbedded((*source))
+		pApiPostV1Users200JSONResponse = &apiPostV1Users200JSONResponse
 	}
-	var pString2 *string
-	if source.Body != nil {
-		pString2 = &source.Body.Email
-	}
-	if pString2 != nil {
-		modelsCreateUser.Email = *pString2
-	}
-	return modelsCreateUser
+	return pApiPostV1Users200JSONResponse
+}
+func (c *ConvertImpl) CreateUserDbModelToAPIModelEmbedded(source models.User) users.UserResponseJSONResponse {
+	var apiUserResponseJSONResponse users.UserResponseJSONResponse
+	pString := source.Email
+	apiUserResponseJSONResponse.Email = &pString
+	pInt64 := source.ID
+	apiUserResponseJSONResponse.Id = &pInt64
+	pString2 := source.Name
+	apiUserResponseJSONResponse.Name = &pString2
+	return apiUserResponseJSONResponse
 }

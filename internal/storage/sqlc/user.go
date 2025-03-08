@@ -5,17 +5,12 @@ import (
 
 	"github.com/naceto/tempstation/internal/generated/db"
 	"github.com/naceto/tempstation/internal/storage/models"
-	"github.com/naceto/tempstation/internal/storage/sqlc/validate"
 )
 
 // CreateUser creates a new user in the storage. It first validates the input parameters
 // using the validation.UserParams function, and if the validation passes, it calls
 // the underlying db.CreateUser function to create the user.
 func (s *storage) CreateUser(ctx context.Context, user *models.CreateUser) (*models.User, error) {
-	if err := validate.CreateUser(user); err != nil {
-		return nil, err
-	}
-
 	u, err := s.db.CreateUser(ctx, db.CreateUserParams{
 		Name:  user.Name,
 		Email: user.Email,

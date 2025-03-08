@@ -11,6 +11,7 @@ import (
 	users "github.com/naceto/tempstation/internal/generated/api/users"
 	"github.com/naceto/tempstation/internal/generated/db"
 	"github.com/naceto/tempstation/internal/resources"
+	"github.com/naceto/tempstation/internal/resources/convert/generated"
 	"github.com/naceto/tempstation/internal/service/middleware"
 	storage "github.com/naceto/tempstation/internal/storage/sqlc"
 	"github.com/naceto/tempstation/web"
@@ -52,10 +53,12 @@ func (s *Service) Start(ctx context.Context) error {
 	queries := db.New(s.db)
 	store := storage.NewStorage(queries)
 
+	convert := &generated.ConvertImpl{}
+
 	// Resources
 	genericResource := resources.NewGeneric()
 	sensorsResource := resources.NewSensors(s.bs.logger, store)
-	usersResource := resources.NewUsers(s.bs.logger, store)
+	usersResource := resources.NewUsers(s.bs.logger, convert, store)
 
 	root := http.NewServeMux()
 	generic.HandlerFromMux(genericResource, root)

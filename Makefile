@@ -29,6 +29,7 @@ new-tern-migration:
 
 .PHONY: run
 run:
+	@rm -rf ./bin
 	@air --build.cmd "go build -o bin/tempstation/main cmd/tempstation/main.go" --build.bin "./bin/tempstation/main"
 
 .PHONY: openapi
@@ -54,6 +55,6 @@ mod-update:
 
 .PHONY: generate
 generate:
-	go generate ./...
+	@goverter gen ./internal/resources/convert
 
 # mockery
