@@ -3,30 +3,21 @@ package storage
 import (
 	"context"
 
-	"github.com/naceto/tempstation/internal/generated/db"
-	// Import the validation package
+	"github.com/naceto/tempstation/internal/storage/models"
 )
 
 type Storage interface {
-	CreateSensor(ctx context.Context, arg db.CreateSensorParams) (db.Sensor, error)
-	CreateUser(ctx context.Context, arg db.CreateUserParams) (db.User, error)
+	// Sensor
+	CreateSensor(ctx context.Context, sensor *models.CreateSensor) (*models.Sensor, error)
+	ListSensors(ctx context.Context, params *models.ListSensorsParams) ([]*models.Sensor, error)
+	GetSensor(ctx context.Context, id int64) (*models.Sensor, error)
+
+	// SensorData
+
+	// User
+	CreateUser(ctx context.Context, arg *models.CreateUser) (*models.User, error)
+	ListUsers(ctx context.Context, params *models.ListUsersParams) ([]*models.User, error)
+	GetUser(ctx context.Context, id int64) (*models.User, error)
+	UpdateUser(ctx context.Context, user *models.UpdateUser) (*models.User, error)
 	DeleteUser(ctx context.Context, id int64) error
-	GetSensor(ctx context.Context, id int64) (db.Sensor, error)
-	GetUser(ctx context.Context, id int64) (db.User, error)
-	ListSensors(ctx context.Context) ([]db.Sensor, error)
-	ListUsers(ctx context.Context) ([]db.User, error)
-	UpdateUser(ctx context.Context, arg db.UpdateUserParams) error
 }
-
-type storage struct {
-	db db.Querier
-}
-
-func NewStorage(db db.Querier) Storage {
-	return &storage{
-		db: db,
-	}
-}
-
-// Force inteface implementation
-var _ Storage = (*storage)(nil)

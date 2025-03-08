@@ -5,9 +5,9 @@
 package db
 
 import (
-	"database/sql"
 	"database/sql/driver"
 	"fmt"
+	"time"
 )
 
 type SensorType string
@@ -54,7 +54,7 @@ func (ns NullSensorType) Value() (driver.Value, error) {
 
 type Sensor struct {
 	ID         int64
-	UserID     sql.NullInt64
+	UserID     int64
 	Name       string
 	Type       SensorType
 	MacAddress string
@@ -62,14 +62,14 @@ type Sensor struct {
 
 type SensorDatum struct {
 	ID          int64
-	SensorID    sql.NullInt64
-	Temperature sql.NullString
-	Humidity    sql.NullString
-	ReadingTime sql.NullTime
+	SensorID    int64
+	Temperature float32
+	Humidity    float32
+	ReadingTime time.Time
 }
 
 type User struct {
 	ID    int64
-	Name  sql.NullString
-	Email sql.NullString
+	Name  string
+	Email string
 }

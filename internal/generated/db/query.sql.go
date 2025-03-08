@@ -7,7 +7,6 @@ package db
 
 import (
 	"context"
-	"database/sql"
 )
 
 const createSensor = `-- name: CreateSensor :one
@@ -20,7 +19,7 @@ RETURNING id, user_id, name, type, mac_address
 `
 
 type CreateSensorParams struct {
-	UserID     sql.NullInt64
+	UserID     int64
 	Name       string
 	Type       SensorType
 	MacAddress string
@@ -54,8 +53,8 @@ RETURNING id, name, email
 `
 
 type CreateUserParams struct {
-	Name  sql.NullString
-	Email sql.NullString
+	Name  string
+	Email string
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
@@ -179,7 +178,7 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, e
 	return items, nil
 }
 
-const updateUser = `-- name: UpdateUser :exec
+const updateUser = `-- name: UpdateUser :one
 UPDATE users
 set 
   name = $2,
@@ -190,11 +189,13 @@ RETURNING id, name, email
 
 type UpdateUserParams struct {
 	ID    int64
-	Name  sql.NullString
-	Email sql.NullString
+	Name  string
+	Email string
 }
 
-func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
-	_, err := q.db.ExecContext(ctx, updateUser, arg.ID, arg.Name, arg.Email)
-	return err
+func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, updateUser, arg.ID, arg.Name, arg.Email)
+	var i User
+	err := row.Scan(&i.ID, &i.Name, &i.Email)
+	return i, err
 }

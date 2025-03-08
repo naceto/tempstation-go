@@ -16,79 +16,53 @@ import (
 	"net/url"
 	"path"
 	"strings"
-	"time"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	externalRef0 "github.com/naceto/tempstation/internal/generated/api/common"
+	"github.com/oapi-codegen/runtime"
 	strictnethttp "github.com/oapi-codegen/runtime/strictmiddleware/nethttp"
-)
-
-// Defines values for SensorType.
-const (
-	SensorTypeDHT11 SensorType = "DHT11"
-	SensorTypeDHT22 SensorType = "DHT22"
 )
 
 // Error Error is a standard error response.
 type Error = externalRef0.Error
 
-// Sensor Sensor specific information.
-type Sensor struct {
+// User User data.
+type User struct {
+	Email *string `json:"email,omitempty"`
+
 	// Id The resource's ID.
-	Id   externalRef0.ID `json:"id"`
-	Mac  string          `json:"mac"`
-	Name string          `json:"name"`
-
-	// Type Sensor type.
-	Type SensorType `json:"type"`
-
-	// UserId The resource's ID.
-	UserId externalRef0.ID `json:"userId"`
+	Id   *externalRef0.ID `json:"id,omitempty"`
+	Name *string          `json:"name,omitempty"`
 }
 
-// SensorData Sensor climate data.
-type SensorData struct {
-	Humidity    *float32   `json:"humidity,omitempty"`
-	Id          *int64     `json:"id,omitempty"`
-	ReadingTime *time.Time `json:"readingTime,omitempty"`
-	SensorId    *int64     `json:"sensorId,omitempty"`
-	Temperature *float32   `json:"temperature,omitempty"`
+// UserPost Create user.
+type UserPost struct {
+	Email string `json:"email"`
+	Name  string `json:"name"`
 }
 
-// SensorPost Sensor specific information.
-type SensorPost struct {
-	Mac  string `json:"mac"`
-	Name string `json:"name"`
-
-	// Type Sensor type.
-	Type SensorType `json:"type"`
-
-	// UserId The resource's ID.
-	UserId externalRef0.ID `json:"userId"`
+// UsersResponse List of users.
+type UsersResponse struct {
+	Users []User `json:"users"`
 }
 
-// SensorType Sensor type.
-type SensorType string
+// UserResponse User data.
+type UserResponse = User
 
-// SensorsDataResponse List of sensor data.
-type SensorsDataResponse struct {
-	Sensors []SensorData `json:"sensors"`
-}
-
-// SensorResponse Sensor specific information.
-type SensorResponse = Sensor
-
-// PostV1SensorsJSONRequestBody defines body for PostV1Sensors for application/json ContentType.
-type PostV1SensorsJSONRequestBody = SensorPost
+// PostV1UsersJSONRequestBody defines body for PostV1Users for application/json ContentType.
+type PostV1UsersJSONRequestBody = UserPost
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
-
-	// (GET /v1/sensors)
-	GetV1Sensors(w http.ResponseWriter, r *http.Request)
-
-	// (POST /v1/sensors)
-	PostV1Sensors(w http.ResponseWriter, r *http.Request)
+	// Get all users.
+	// (GET /v1/users)
+	GetV1Users(w http.ResponseWriter, r *http.Request)
+	// Create a new user.
+	// (POST /v1/users)
+	PostV1Users(w http.ResponseWriter, r *http.Request)
+	// Get a user by ID.
+	// (GET /v1/users/{id})
+	GetV1UsersId(w http.ResponseWriter, r *http.Request, id externalRef0.ID)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -100,11 +74,11 @@ type ServerInterfaceWrapper struct {
 
 type MiddlewareFunc func(http.Handler) http.Handler
 
-// GetV1Sensors operation middleware
-func (siw *ServerInterfaceWrapper) GetV1Sensors(w http.ResponseWriter, r *http.Request) {
+// GetV1Users operation middleware
+func (siw *ServerInterfaceWrapper) GetV1Users(w http.ResponseWriter, r *http.Request) {
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetV1Sensors(w, r)
+		siw.Handler.GetV1Users(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -114,11 +88,36 @@ func (siw *ServerInterfaceWrapper) GetV1Sensors(w http.ResponseWriter, r *http.R
 	handler.ServeHTTP(w, r)
 }
 
-// PostV1Sensors operation middleware
-func (siw *ServerInterfaceWrapper) PostV1Sensors(w http.ResponseWriter, r *http.Request) {
+// PostV1Users operation middleware
+func (siw *ServerInterfaceWrapper) PostV1Users(w http.ResponseWriter, r *http.Request) {
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.PostV1Sensors(w, r)
+		siw.Handler.PostV1Users(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetV1UsersId operation middleware
+func (siw *ServerInterfaceWrapper) GetV1UsersId(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id externalRef0.ID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", r.PathValue("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetV1UsersId(w, r, id)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -248,81 +247,115 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 		ErrorHandlerFunc:   options.ErrorHandlerFunc,
 	}
 
-	m.HandleFunc("GET "+options.BaseURL+"/v1/sensors", wrapper.GetV1Sensors)
-	m.HandleFunc("POST "+options.BaseURL+"/v1/sensors", wrapper.PostV1Sensors)
+	m.HandleFunc("GET "+options.BaseURL+"/v1/users", wrapper.GetV1Users)
+	m.HandleFunc("POST "+options.BaseURL+"/v1/users", wrapper.PostV1Users)
+	m.HandleFunc("GET "+options.BaseURL+"/v1/users/{id}", wrapper.GetV1UsersId)
 
 	return m
 }
 
-type SensorResponseJSONResponse Sensor
+type UserResponseJSONResponse User
 
-type SensorsDataResponseJSONResponse SensorsDataResponse
+type UsersResponseJSONResponse UsersResponse
 
-type GetV1SensorsRequestObject struct {
+type GetV1UsersRequestObject struct {
 }
 
-type GetV1SensorsResponseObject interface {
-	VisitGetV1SensorsResponse(w http.ResponseWriter) error
+type GetV1UsersResponseObject interface {
+	VisitGetV1UsersResponse(w http.ResponseWriter) error
 }
 
-type GetV1Sensors200JSONResponse struct {
-	SensorsDataResponseJSONResponse
-}
+type GetV1Users200JSONResponse struct{ UsersResponseJSONResponse }
 
-func (response GetV1Sensors200JSONResponse) VisitGetV1SensorsResponse(w http.ResponseWriter) error {
+func (response GetV1Users200JSONResponse) VisitGetV1UsersResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 
 	return json.NewEncoder(w).Encode(response)
 }
 
-type GetV1Sensors400JSONResponse struct{ externalRef0.ErrorResponse }
+type GetV1Users400JSONResponse struct{ externalRef0.ErrorResponse }
 
-func (response GetV1Sensors400JSONResponse) VisitGetV1SensorsResponse(w http.ResponseWriter) error {
+func (response GetV1Users400JSONResponse) VisitGetV1UsersResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(400)
 
 	return json.NewEncoder(w).Encode(response)
 }
 
-type GetV1Sensors500JSONResponse Error
+type GetV1Users500JSONResponse Error
 
-func (response GetV1Sensors500JSONResponse) VisitGetV1SensorsResponse(w http.ResponseWriter) error {
+func (response GetV1Users500JSONResponse) VisitGetV1UsersResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(500)
 
 	return json.NewEncoder(w).Encode(response)
 }
 
-type PostV1SensorsRequestObject struct {
-	Body *PostV1SensorsJSONRequestBody
+type PostV1UsersRequestObject struct {
+	Body *PostV1UsersJSONRequestBody
 }
 
-type PostV1SensorsResponseObject interface {
-	VisitPostV1SensorsResponse(w http.ResponseWriter) error
+type PostV1UsersResponseObject interface {
+	VisitPostV1UsersResponse(w http.ResponseWriter) error
 }
 
-type PostV1Sensors200JSONResponse struct{ SensorResponseJSONResponse }
+type PostV1Users200JSONResponse struct{ UserResponseJSONResponse }
 
-func (response PostV1Sensors200JSONResponse) VisitPostV1SensorsResponse(w http.ResponseWriter) error {
+func (response PostV1Users200JSONResponse) VisitPostV1UsersResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 
 	return json.NewEncoder(w).Encode(response)
 }
 
-type PostV1Sensors400JSONResponse struct{ externalRef0.ErrorResponse }
+type PostV1Users400JSONResponse struct{ externalRef0.ErrorResponse }
 
-func (response PostV1Sensors400JSONResponse) VisitPostV1SensorsResponse(w http.ResponseWriter) error {
+func (response PostV1Users400JSONResponse) VisitPostV1UsersResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(400)
 
 	return json.NewEncoder(w).Encode(response)
 }
 
-type PostV1Sensors500JSONResponse Error
+type PostV1Users500JSONResponse Error
 
-func (response PostV1Sensors500JSONResponse) VisitPostV1SensorsResponse(w http.ResponseWriter) error {
+func (response PostV1Users500JSONResponse) VisitPostV1UsersResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetV1UsersIdRequestObject struct {
+	Id externalRef0.ID `json:"id"`
+}
+
+type GetV1UsersIdResponseObject interface {
+	VisitGetV1UsersIdResponse(w http.ResponseWriter) error
+}
+
+type GetV1UsersId200JSONResponse struct{ UserResponseJSONResponse }
+
+func (response GetV1UsersId200JSONResponse) VisitGetV1UsersIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetV1UsersId400JSONResponse struct{ externalRef0.ErrorResponse }
+
+func (response GetV1UsersId400JSONResponse) VisitGetV1UsersIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetV1UsersId500JSONResponse Error
+
+func (response GetV1UsersId500JSONResponse) VisitGetV1UsersIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(500)
 
@@ -331,12 +364,15 @@ func (response PostV1Sensors500JSONResponse) VisitPostV1SensorsResponse(w http.R
 
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
-
-	// (GET /v1/sensors)
-	GetV1Sensors(ctx context.Context, request GetV1SensorsRequestObject) (GetV1SensorsResponseObject, error)
-
-	// (POST /v1/sensors)
-	PostV1Sensors(ctx context.Context, request PostV1SensorsRequestObject) (PostV1SensorsResponseObject, error)
+	// Get all users.
+	// (GET /v1/users)
+	GetV1Users(ctx context.Context, request GetV1UsersRequestObject) (GetV1UsersResponseObject, error)
+	// Create a new user.
+	// (POST /v1/users)
+	PostV1Users(ctx context.Context, request PostV1UsersRequestObject) (PostV1UsersResponseObject, error)
+	// Get a user by ID.
+	// (GET /v1/users/{id})
+	GetV1UsersId(ctx context.Context, request GetV1UsersIdRequestObject) (GetV1UsersIdResponseObject, error)
 }
 
 type StrictHandlerFunc = strictnethttp.StrictHTTPHandlerFunc
@@ -368,23 +404,23 @@ type strictHandler struct {
 	options     StrictHTTPServerOptions
 }
 
-// GetV1Sensors operation middleware
-func (sh *strictHandler) GetV1Sensors(w http.ResponseWriter, r *http.Request) {
-	var request GetV1SensorsRequestObject
+// GetV1Users operation middleware
+func (sh *strictHandler) GetV1Users(w http.ResponseWriter, r *http.Request) {
+	var request GetV1UsersRequestObject
 
 	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.GetV1Sensors(ctx, request.(GetV1SensorsRequestObject))
+		return sh.ssi.GetV1Users(ctx, request.(GetV1UsersRequestObject))
 	}
 	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "GetV1Sensors")
+		handler = middleware(handler, "GetV1Users")
 	}
 
 	response, err := handler(r.Context(), w, r, request)
 
 	if err != nil {
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(GetV1SensorsResponseObject); ok {
-		if err := validResponse.VisitGetV1SensorsResponse(w); err != nil {
+	} else if validResponse, ok := response.(GetV1UsersResponseObject); ok {
+		if err := validResponse.VisitGetV1UsersResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {
@@ -392,11 +428,11 @@ func (sh *strictHandler) GetV1Sensors(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// PostV1Sensors operation middleware
-func (sh *strictHandler) PostV1Sensors(w http.ResponseWriter, r *http.Request) {
-	var request PostV1SensorsRequestObject
+// PostV1Users operation middleware
+func (sh *strictHandler) PostV1Users(w http.ResponseWriter, r *http.Request) {
+	var request PostV1UsersRequestObject
 
-	var body PostV1SensorsJSONRequestBody
+	var body PostV1UsersJSONRequestBody
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
 		return
@@ -404,18 +440,44 @@ func (sh *strictHandler) PostV1Sensors(w http.ResponseWriter, r *http.Request) {
 	request.Body = &body
 
 	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.PostV1Sensors(ctx, request.(PostV1SensorsRequestObject))
+		return sh.ssi.PostV1Users(ctx, request.(PostV1UsersRequestObject))
 	}
 	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "PostV1Sensors")
+		handler = middleware(handler, "PostV1Users")
 	}
 
 	response, err := handler(r.Context(), w, r, request)
 
 	if err != nil {
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(PostV1SensorsResponseObject); ok {
-		if err := validResponse.VisitPostV1SensorsResponse(w); err != nil {
+	} else if validResponse, ok := response.(PostV1UsersResponseObject); ok {
+		if err := validResponse.VisitPostV1UsersResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetV1UsersId operation middleware
+func (sh *strictHandler) GetV1UsersId(w http.ResponseWriter, r *http.Request, id externalRef0.ID) {
+	var request GetV1UsersIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetV1UsersId(ctx, request.(GetV1UsersIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetV1UsersId")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetV1UsersIdResponseObject); ok {
+		if err := validResponse.VisitGetV1UsersIdResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {
@@ -426,18 +488,17 @@ func (sh *strictHandler) PostV1Sensors(w http.ResponseWriter, r *http.Request) {
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/9RWTW/bSAz9KwJ3gb1o/ZHN9qBbWxetgR6C1uilCIKJRNsTeD4ypFIYgf57wZFsy5WE",
-	"GG4CNCdrOBzO45tHmo+QO+OdRcsE2SMEvC+R+J0rNEbDV7TkwpUjllXuLKONn8r7jc4Va2fHd+Ss2Chf",
-	"o1Hy9XfAJWTw1/gQflzv0rgVsqqqFAqkPGgvkSCDxRoTiz8Sil5JoVgl7BJVFCMQ74DknaU2ui+N6ZkR",
-	"9qGrdxJtl24EVdqsaaZYvRCK49iDkCjZERNxKa9vcmeMszfOo5XlhxBegKqhi/qQxo36FZvjEr12zx77",
-	"nBNNiUqIlS1UKBKMtkOiKfjgPAZuxGqQSK1icrz1CBkQB21Xwgix4pLeu6K9rS3jCkOE1Jjc7R3mfHjb",
-	"LrJGA+Qx10udRzEEE8nrQtLFGQzOZ3K/UXlvJlaZ/hRrwymiWohnlUJJGObnIozFeF/qgAVk3yXTfcAG",
-	"ZJ1DA+x6kGJR+CDN+UYbxRgbQZfedWl0oXkr3/UrQAbLjVMM++tsaW7ljdPmMfZ+2vKby4PfXgySlyq0",
-	"XS10zfT+RKEY/2UdU+sqLAKen3oHo/EYFJcBT0E/rNBdc/4Nlb4yqZ2lskUDuZcmOSO0oC2N3DD7tJhO",
-	"IZXfi4tW0AMDA53/OPpnTZy4ZfvPrEt+vVl3C0ZDp/Eai+YgChWC2naI2oXuY2Wwc/+BrbhfFh2gMjsE",
-	"JFeGHP+hZD4TXE+Wotwo1RHBaN7I5gKNF5ja2eTt1RxSeMBA9S3T0WQ0EVQNFMjgv2hKwStex/THD9Nx",
-	"611XGCvUxYLXzkohwEfkb9NGRvDLYHMxmQzJYO/XPyCkcHnK2ScHhCqF/58nkDyoWtGRHqsUfNO2jkmR",
-	"ZnbMym4g3Q5jac2sR9Pl+aS+Oj5b1oEWh7bwTsucv+vr++PVdfUzAAD//zwCx9wJDAAA",
+	"H4sIAAAAAAAC/9yW32/TMBDH/xXrQOIlajoYPOQNVoQq8TChwcs0TV5y7TzVP/Bdh6oq/zs6J2m7NoFq",
+	"KhLw5pztu4/vvmdnDaW3wTt0TFCsIeL3JRJ/8JXBZPhKGC89sYxL7xhdGuoQFqbUbLzLH8g7sVF5j1bL",
+	"6GXEGRTwIt86z5tZyjcO67rOoEIqowniBwqYaNaKvSojakallcMfakkYR5AlNBOxgoLjEmVzRAre0Rb0",
+	"S2s4KWwfqNiVcTM/gjpLX/RHYm+99kB8NsTKz1KCKIHoYG5Lb613tz6gk8+PMfrT52UoUB9mmhiBTLTb",
+	"xXuzvFj3LVaGlFbE2lU6VgqTrSu2SCFEHzByK1GLRHqeDsergFAAcTRuLhkh1rykC1/tThvHOE+FzTqT",
+	"v3vAkrtiHnKlglea9WF4tNoseoOb6hl5nE5kq9O270BDwF2HPoW+aNqoa6BjsYdjb1vwulmVtW5uBrie",
+	"dMUv1buPl8wyMIyWjuvTDYSOUa8OiBuXfaiDcv4L9dkvmQPQq3sUJL+MJb4iNZ0I18xHq7mJ8O4cssOA",
+	"olo38wnG8EImr9AGwTTeqfeXU8jgESM1Uc5G49FYqFoUKOBNMmUQNN+n4+ePZ/mmmnNMOpX0JI/TCgr4",
+	"hPztLMkF9i711+PxUOk36/YvygzOj9n127uyzuDtaRxJnZfW6rhqDqv0YrHVPes57cizziC03fw0S9Lj",
+	"u2nqHurVMOLOW77z7j43x/9Mii/6fh/201xnW2Xma1PVR8hzWiVhR22Rk6Cve9+J6QSkjaBITQDdjSrv",
+	"wf5vTPb8B1ceivrmvy9m6pdURXW3au+xg1rWG1tvQdBVwRv5xd3Uotla39Q/AwAA//8htnw5AgsAAA==",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

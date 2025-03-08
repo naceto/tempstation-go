@@ -1,0 +1,116 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Tempstation API
+tags:
+  - name: users
+    description: User endpoints
+
+paths:
+  /v1/users:
+    get:
+      tags:
+        - users
+      summary: Get all users.
+      responses:
+        "200":
+          $ref: "#/components/responses/UsersResponse"
+        "400":
+          $ref: "../common/openapi.yaml#/components/responses/ErrorResponse"
+        "500":
+          $ref: "../common/openapi.yaml#/components/responses/ErrorResponse"
+    post:
+      tags:
+        - users
+      summary: Create a new user.
+      requestBody:
+        $ref: "#/components/requestBodies/UserPost"
+      responses:
+        "200":
+          $ref: "#/components/responses/UserResponse"
+        "400":
+          $ref: "../common/openapi.yaml#/components/responses/ErrorResponse"
+        "500":
+          $ref: "../common/openapi.yaml#/components/responses/ErrorResponse"
+  /v1/users/{id}:
+    get:
+      tags:
+        - users
+      summary: Get a user by ID.
+      parameters:
+        - name: id
+          in: path
+          description: User ID
+          required: true
+          schema:
+            $ref: "../common/openapi.yaml#/components/schemas/ID"
+      responses:
+        "200":
+          $ref: "#/components/responses/UserResponse"
+        "400":
+          $ref: "../common/openapi.yaml#/components/responses/ErrorResponse"
+        "500":
+          $ref: "../common/openapi.yaml#/components/responses/ErrorResponse"
+
+components:
+  requestBodies:
+    UserPost:
+      description: Data to create a new user.
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/UserPost"
+
+  responses:
+    UserResponse:
+      description: User info.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/User"
+
+    UsersResponse:
+      description: List of users.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/UsersResponse"
+
+  schemas:
+    Error:
+      $ref: "../common/openapi.yaml#/components/schemas/Error"
+
+    UserPost:
+      type: object
+      description: Create user.
+      required:
+        - name
+        - email
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+
+    UsersResponse:
+      type: object
+      description: List of users.
+      required:
+        - users
+      properties:
+        users:
+          type: array
+          items:
+            $ref: "#/components/schemas/User"
+
+    User:
+      type: object
+      description: User data.
+      properties:
+        id:
+          $ref: "../common/openapi.yaml#/components/schemas/ID"
+        name:
+          type: string
+        email:
+          type: string

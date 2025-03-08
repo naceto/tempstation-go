@@ -16,7 +16,7 @@ type Querier interface {
 	GetUser(ctx context.Context, id int64) (User, error)
 	ListSensors(ctx context.Context, arg ListSensorsParams) ([]Sensor, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error)
-	UpdateUser(ctx context.Context, arg UpdateUserParams) error
+	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 }
 
 var _ Querier = (*Queries)(nil)
