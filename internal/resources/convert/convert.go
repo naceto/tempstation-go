@@ -10,11 +10,14 @@ type Convert interface {
 	// goverter:useZeroValueOnPointerInconsistency
 	// goverter:map Body.Name Name
 	// goverter:map Body.Email Email
-	CreateUserAPIModelToDbModel(input *api.PostV1UsersRequestObject) *models.CreateUser
+	CreateUserAPIToStorage(input *api.PostV1UsersRequestObject) *models.CreateUser
 
 	// goverter:map . UserResponseJSONResponse
-	CreateUserDbModelToAPIModel(input *models.User) *api.PostV1Users200JSONResponse
+	PostUserAPIFromStorage(input *models.User) *api.PostV1Users200JSONResponse
+
+	// goverter:map . UserResponseJSONResponse
+	GetUserAPIFromStorage(input *models.User) *api.GetV1UsersId200JSONResponse
 
 	// goverter:map ID Id
-	CreateUserDbModelToAPIModelEmbedded(input models.User) api.UserResponseJSONResponse
+	UserAPIFromStorageEmbedded(input models.User) api.UserResponseJSONResponse
 }

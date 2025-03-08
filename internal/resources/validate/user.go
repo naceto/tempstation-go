@@ -11,12 +11,12 @@ var (
 	ErrEmailValidationError = errors.New("user email cannot be empty")
 )
 
-func CreateUser(params *models.CreateUser) error {
-	if params.Name == "" {
+func CreateUser(user *models.CreateUser) error {
+	if user.Name == "" {
 		return ErrUserValidationError
 	}
 
-	if params.Email == "" {
+	if user.Email == "" {
 		return ErrEmailValidationError
 	}
 

@@ -33,12 +33,17 @@ func (u *Users) GetV1Users(ctx context.Context, request api.GetV1UsersRequestObj
 
 // (GET /v1/users/{id})
 func (u *Users) GetV1UsersId(ctx context.Context, request api.GetV1UsersIdRequestObject) (api.GetV1UsersIdResponseObject, error) {
-	return nil, nil
+	user, err := u.store.GetUser(ctx, request.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	return u.convert.GetUserAPIFromStorage(user), nil
 }
 
 // (POST /v1/users)
 func (u *Users) PostV1Users(ctx context.Context, request api.PostV1UsersRequestObject) (api.PostV1UsersResponseObject, error) {
-	createUser := u.convert.CreateUserAPIModelToDbModel(&request)
+	createUser := u.convert.CreateUserAPIToStorage(&request)
 	if err := validate.CreateUser(createUser); err != nil {
 		return nil, err
 	}
@@ -48,5 +53,5 @@ func (u *Users) PostV1Users(ctx context.Context, request api.PostV1UsersRequestO
 		return nil, err
 	}
 
-	return u.convert.CreateUserDbModelToAPIModel(user), nil
+	return u.convert.PostUserAPIFromStorage(user), nil
 }

@@ -10,7 +10,7 @@ import (
 
 type ConvertImpl struct{}
 
-func (c *ConvertImpl) CreateUserAPIModelToDbModel(source *users.PostV1UsersRequestObject) *models.CreateUser {
+func (c *ConvertImpl) CreateUserAPIToStorage(source *users.PostV1UsersRequestObject) *models.CreateUser {
 	var pModelsCreateUser *models.CreateUser
 	if source != nil {
 		var modelsCreateUser models.CreateUser
@@ -32,16 +32,25 @@ func (c *ConvertImpl) CreateUserAPIModelToDbModel(source *users.PostV1UsersReque
 	}
 	return pModelsCreateUser
 }
-func (c *ConvertImpl) CreateUserDbModelToAPIModel(source *models.User) *users.PostV1Users200JSONResponse {
+func (c *ConvertImpl) GetUserAPIFromStorage(source *models.User) *users.GetV1UsersId200JSONResponse {
+	var pApiGetV1UsersId200JSONResponse *users.GetV1UsersId200JSONResponse
+	if source != nil {
+		var apiGetV1UsersId200JSONResponse users.GetV1UsersId200JSONResponse
+		apiGetV1UsersId200JSONResponse.UserResponseJSONResponse = c.UserAPIFromStorageEmbedded((*source))
+		pApiGetV1UsersId200JSONResponse = &apiGetV1UsersId200JSONResponse
+	}
+	return pApiGetV1UsersId200JSONResponse
+}
+func (c *ConvertImpl) PostUserAPIFromStorage(source *models.User) *users.PostV1Users200JSONResponse {
 	var pApiPostV1Users200JSONResponse *users.PostV1Users200JSONResponse
 	if source != nil {
 		var apiPostV1Users200JSONResponse users.PostV1Users200JSONResponse
-		apiPostV1Users200JSONResponse.UserResponseJSONResponse = c.CreateUserDbModelToAPIModelEmbedded((*source))
+		apiPostV1Users200JSONResponse.UserResponseJSONResponse = c.UserAPIFromStorageEmbedded((*source))
 		pApiPostV1Users200JSONResponse = &apiPostV1Users200JSONResponse
 	}
 	return pApiPostV1Users200JSONResponse
 }
-func (c *ConvertImpl) CreateUserDbModelToAPIModelEmbedded(source models.User) users.UserResponseJSONResponse {
+func (c *ConvertImpl) UserAPIFromStorageEmbedded(source models.User) users.UserResponseJSONResponse {
 	var apiUserResponseJSONResponse users.UserResponseJSONResponse
 	pString := source.Email
 	apiUserResponseJSONResponse.Email = &pString

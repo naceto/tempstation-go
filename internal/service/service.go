@@ -65,7 +65,7 @@ func (s *Service) Start(ctx context.Context) error {
 
 	api := http.NewServeMux()
 
-	// Users
+	// User resources
 	us := users.NewStrictHandler(usersResource, nil)
 	usersHandler := users.HandlerFromMux(us, api)
 	uSwagger, err := users.GetSwagger()
@@ -73,7 +73,7 @@ func (s *Service) Start(ctx context.Context) error {
 		return err
 	}
 
-	// Sensors
+	// Sensor resources
 	ss := sensors.NewStrictHandler(sensorsResource, nil)
 	sensorsHandler := sensors.HandlerFromMux(ss, api)
 	sSwagger, err := sensors.GetSwagger()
@@ -82,7 +82,9 @@ func (s *Service) Start(ctx context.Context) error {
 	}
 
 	root.Handle("/api/swagger-ui/", http.StripPrefix("/api/swagger-ui", http.FileServerFS(web.Content)))
-	root.Handle("/api/v1/users", http.StripPrefix("/api", strictMiddleware.OapiRequestValidator(uSwagger)(usersHandler)))
+	uh := http.StripPrefix("/api", strictMiddleware.OapiRequestValidator(uSwagger)(usersHandler))
+	root.Handle("/api/v1/users", uh)
+	root.Handle("/api/v1/users/", uh)
 	root.Handle("/api/v1/sensors", http.StripPrefix("/api", strictMiddleware.OapiRequestValidator(sSwagger)(sensorsHandler)))
 
 	logWrapper := middleware.NewLogger(s.bs.logger, root)

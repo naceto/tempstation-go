@@ -3,8 +3,8 @@ package validate_test
 import (
 	"testing"
 
+	"github.com/naceto/tempstation/internal/resources/validate"
 	"github.com/naceto/tempstation/internal/storage/models"
-	"github.com/naceto/tempstation/internal/storage/sqlc/validate"
 	"github.com/stretchr/testify/assert"
 )
 
