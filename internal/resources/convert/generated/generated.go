@@ -41,6 +41,20 @@ func (c *ConvertImpl) GetUserAPIFromStorage(source *models.User) *users.GetV1Use
 	}
 	return pApiGetV1UsersId200JSONResponse
 }
+func (c *ConvertImpl) ListUsersAPIToStorage(source *users.GetV1UsersRequestObject) *models.ListUsersParams {
+	var pModelsListUsersParams *models.ListUsersParams
+	if source != nil {
+		var modelsListUsersParams models.ListUsersParams
+		if (*source).Params.Limit != nil {
+			modelsListUsersParams.Limit = *(*source).Params.Limit
+		}
+		if (*source).Params.Offset != nil {
+			modelsListUsersParams.Offset = *(*source).Params.Offset
+		}
+		pModelsListUsersParams = &modelsListUsersParams
+	}
+	return pModelsListUsersParams
+}
 func (c *ConvertImpl) PostUserAPIFromStorage(source *models.User) *users.PostV1Users200JSONResponse {
 	var pApiPostV1Users200JSONResponse *users.PostV1Users200JSONResponse
 	if source != nil {
