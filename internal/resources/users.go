@@ -28,30 +28,44 @@ func NewUsers(log *slog.Logger, convert convert.Convert, store storage.Storage) 
 
 // (GET /v1/users)
 func (u *Users) GetV1Users(ctx context.Context, request api.GetV1UsersRequestObject) (api.GetV1UsersResponseObject, error) {
-	return nil, nil
+	params := u.convert.ListUsersAPIToStorage(&request)
+	users, err := u.store.ListUsers(ctx, params)
+	if err != nil {
+		u.log.Error("resources.GetV1Users", "store.ListUser error", err)
+		return nil, err
+	}
+
+	response := u.convert.ListUsersAPIFromStorage(users)
+	return response, nil
 }
 
 // (GET /v1/users/{id})
 func (u *Users) GetV1UsersId(ctx context.Context, request api.GetV1UsersIdRequestObject) (api.GetV1UsersIdResponseObject, error) {
 	user, err := u.store.GetUser(ctx, request.Id)
 	if err != nil {
+		u.log.Error("resources.GetV1UsersId", "store.GetUser error", err)
 		return nil, err
 	}
 
-	return u.convert.GetUserAPIFromStorage(user), nil
+	response := u.convert.GetUserAPIFromStorage(user)
+	return response, nil
 }
 
 // (POST /v1/users)
 func (u *Users) PostV1Users(ctx context.Context, request api.PostV1UsersRequestObject) (api.PostV1UsersResponseObject, error) {
 	createUser := u.convert.CreateUserAPIToStorage(&request)
+
 	if err := validate.CreateUser(createUser); err != nil {
+		u.log.Error("resources.PostV1Users", "validate.CreateUser error", err)
 		return nil, err
 	}
 
 	user, err := u.store.CreateUser(ctx, createUser)
 	if err != nil {
+		u.log.Error("resources.PostV1Users", "store.CreateUser error", err)
 		return nil, err
 	}
 
-	return u.convert.PostUserAPIFromStorage(user), nil
+	response := u.convert.PostUserAPIFromStorage(user)
+	return response, nil
 }

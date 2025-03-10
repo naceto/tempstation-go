@@ -61,8 +61,13 @@ func (s *storage) DeleteUser(ctx context.Context, id int64) error {
 
 // ListUsers returns a list of all users stored in the database.
 func (s *storage) ListUsers(ctx context.Context, params *models.ListUsersParams) ([]*models.User, error) {
+	var limit int32 = 10
+	if params.Limit != 0 {
+		limit = params.Limit
+	}
+
 	u, err := s.db.ListUsers(ctx, db.ListUsersParams{
-		Limit:  params.Limit,
+		Limit:  limit,
 		Offset: params.Offset,
 	})
 	if err != nil {

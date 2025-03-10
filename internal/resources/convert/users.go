@@ -6,6 +6,8 @@ import (
 )
 
 // goverter:converter
+// goverter:output:file ./generated.go
+// goverter:extend ListUsersAPIFromStorageExtend
 type Convert interface {
 	// goverter:useZeroValueOnPointerInconsistency
 	// goverter:map Body.Name Name
@@ -25,4 +27,23 @@ type Convert interface {
 	// goverter:map Params.Offset Offset
 	// goverter:map Params.Limit Limit
 	ListUsersAPIToStorage(input *api.GetV1UsersRequestObject) *models.ListUsersParams
+
+	ListUsersAPIFromStorage(input []*models.User) api.GetV1Users200JSONResponse
+}
+
+func ListUsersAPIFromStorageExtend(input []*models.User) api.GetV1Users200JSONResponse {
+	users := make([]api.User, 0, len(input))
+	for _, u := range input {
+		users = append(users, api.User{
+			Id:    &u.ID,
+			Name:  &u.Name,
+			Email: &u.Email,
+		})
+	}
+
+	return api.GetV1Users200JSONResponse{
+		UsersResponseJSONResponse: api.UsersResponseJSONResponse{
+			Users: users,
+		},
+	}
 }
