@@ -11,7 +11,6 @@ import (
 	users "github.com/naceto/tempstation/internal/generated/api/users"
 	"github.com/naceto/tempstation/internal/generated/db"
 	"github.com/naceto/tempstation/internal/resources"
-	"github.com/naceto/tempstation/internal/resources/convert/generated"
 	"github.com/naceto/tempstation/internal/service/middleware"
 	storage "github.com/naceto/tempstation/internal/storage/sqlc"
 	"github.com/naceto/tempstation/web"
@@ -52,20 +51,20 @@ func (s *Service) Start(ctx context.Context) error {
 
 	queries := db.New(s.db)
 	store := storage.NewStorage(queries)
-
-	convert := &generated.ConvertImpl{}
+	// convert := &generated.ConvertImpl{}
 
 	// Resources
 	genericResource := resources.NewGeneric()
 	sensorsResource := resources.NewSensors(s.bs.logger, store)
-	usersResource := resources.NewUsers(s.bs.logger, convert, store)
+	usersResource := resources.NewUsers(s.bs.logger, nil, store)
 
+	// Handlers
 	root := http.NewServeMux()
 	generic.HandlerFromMux(genericResource, root)
 
 	api := http.NewServeMux()
 
-	// User resources
+	// User
 	us := users.NewStrictHandler(usersResource, nil)
 	usersHandler := users.HandlerFromMux(us, api)
 	uSwagger, err := users.GetSwagger()
@@ -73,7 +72,7 @@ func (s *Service) Start(ctx context.Context) error {
 		return err
 	}
 
-	// Sensor resources
+	// Sensor
 	ss := sensors.NewStrictHandler(sensorsResource, nil)
 	sensorsHandler := sensors.HandlerFromMux(ss, api)
 	sSwagger, err := sensors.GetSwagger()

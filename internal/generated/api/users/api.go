@@ -49,6 +49,15 @@ type UsersResponse struct {
 // UserResponse User data.
 type UserResponse = User
 
+// GetV1UsersParams defines parameters for GetV1Users.
+type GetV1UsersParams struct {
+	// Offset The number of items to skip before starting to collect the result set
+	Offset *int32 `form:"offset,omitempty" json:"offset,omitempty"`
+
+	// Limit The numbers of items to return
+	Limit *int32 `form:"limit,omitempty" json:"limit,omitempty"`
+}
+
 // PostV1UsersJSONRequestBody defines body for PostV1Users for application/json ContentType.
 type PostV1UsersJSONRequestBody = UserPost
 
@@ -56,7 +65,7 @@ type PostV1UsersJSONRequestBody = UserPost
 type ServerInterface interface {
 	// Get all users.
 	// (GET /v1/users)
-	GetV1Users(w http.ResponseWriter, r *http.Request)
+	GetV1Users(w http.ResponseWriter, r *http.Request, params GetV1UsersParams)
 	// Create a new user.
 	// (POST /v1/users)
 	PostV1Users(w http.ResponseWriter, r *http.Request)
@@ -77,8 +86,29 @@ type MiddlewareFunc func(http.Handler) http.Handler
 // GetV1Users operation middleware
 func (siw *ServerInterfaceWrapper) GetV1Users(w http.ResponseWriter, r *http.Request) {
 
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetV1UsersParams
+
+	// ------------- Optional query parameter "offset" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "offset", r.URL.Query(), &params.Offset)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "offset", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "limit", r.URL.Query(), &params.Limit)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		return
+	}
+
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetV1Users(w, r)
+		siw.Handler.GetV1Users(w, r, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -259,6 +289,7 @@ type UserResponseJSONResponse User
 type UsersResponseJSONResponse UsersResponse
 
 type GetV1UsersRequestObject struct {
+	Params GetV1UsersParams
 }
 
 type GetV1UsersResponseObject interface {
@@ -405,8 +436,10 @@ type strictHandler struct {
 }
 
 // GetV1Users operation middleware
-func (sh *strictHandler) GetV1Users(w http.ResponseWriter, r *http.Request) {
+func (sh *strictHandler) GetV1Users(w http.ResponseWriter, r *http.Request, params GetV1UsersParams) {
 	var request GetV1UsersRequestObject
+
+	request.Params = params
 
 	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
 		return sh.ssi.GetV1Users(ctx, request.(GetV1UsersRequestObject))
@@ -488,17 +521,19 @@ func (sh *strictHandler) GetV1UsersId(w http.ResponseWriter, r *http.Request, id
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/9yW32/TMBDH/xXrQOIlajoYPOQNVoQq8TChwcs0TV5y7TzVP/Bdh6oq/zs6J2m7NoFq",
-	"KhLw5pztu4/vvmdnDaW3wTt0TFCsIeL3JRJ/8JXBZPhKGC89sYxL7xhdGuoQFqbUbLzLH8g7sVF5j1bL",
-	"6GXEGRTwIt86z5tZyjcO67rOoEIqowniBwqYaNaKvSojakallcMfakkYR5AlNBOxgoLjEmVzRAre0Rb0",
-	"S2s4KWwfqNiVcTM/gjpLX/RHYm+99kB8NsTKz1KCKIHoYG5Lb613tz6gk8+PMfrT52UoUB9mmhiBTLTb",
-	"xXuzvFj3LVaGlFbE2lU6VgqTrSu2SCFEHzByK1GLRHqeDsergFAAcTRuLhkh1rykC1/tThvHOE+FzTqT",
-	"v3vAkrtiHnKlglea9WF4tNoseoOb6hl5nE5kq9O270BDwF2HPoW+aNqoa6BjsYdjb1vwulmVtW5uBrie",
-	"dMUv1buPl8wyMIyWjuvTDYSOUa8OiBuXfaiDcv4L9dkvmQPQq3sUJL+MJb4iNZ0I18xHq7mJ8O4cssOA",
-	"olo38wnG8EImr9AGwTTeqfeXU8jgESM1Uc5G49FYqFoUKOBNMmUQNN+n4+ePZ/mmmnNMOpX0JI/TCgr4",
-	"hPztLMkF9i711+PxUOk36/YvygzOj9n127uyzuDtaRxJnZfW6rhqDqv0YrHVPes57cizziC03fw0S9Lj",
-	"u2nqHurVMOLOW77z7j43x/9Mii/6fh/201xnW2Xma1PVR8hzWiVhR22Rk6Cve9+J6QSkjaBITQDdjSrv",
-	"wf5vTPb8B1ceivrmvy9m6pdURXW3au+xg1rWG1tvQdBVwRv5xd3Uotla39Q/AwAA//8htnw5AgsAAA==",
+	"H4sIAAAAAAAC/9RXXW/bOgz9KwLvBe6LkaQfdw9+25phCLCHYuj2UhSFYtOpOuujEt0hCPzfB8pJnMT2",
+	"mgUdsL7JlEQekeeI8goyq501aChAugKPTxUG+mBzhdHwNaC/toF4nFlDaOJQOleqTJKyZvwYrGFbyB5Q",
+	"Sx7967GAFP4Zt87HzWwYbx3WdZ1AjiHzyrEfSGEqSQqyIvMoCYUUBn+IKqAfQRKhKY85pOQr5M0eg7Mm",
+	"tEC/rA2vCrYPKNuFMoUdQZ3Er/BHYrdee0B8VoGELWKCQgQinbrPrNbW3FuHhj8/em9fPy9DgfpgxokR",
+	"8MR6O3tvlqervsVCBSFFIGly6XOB0bYpNlPBeevQ05qiGkOQi3g4WjqEFAJ5ZRackUCSqnBl891pZQgX",
+	"sbDJxmTnj5jRpphdXLHguSTZDY9aqrI3uMpPyONsyluN1H0HGgK8Ueg+6KtGRhsBHQt7OHYrwdtmVbJ2",
+	"czeAa08Vv2TvIbxo5oEi1OE4nW5BSO/lsoO4cdkHdZDOfyE/+ynTAXrzgAzJVj7D/4KYTRlXYb2W1ER4",
+	"dwlJNyCz1hQ2glFU8uQNascwlTXi/fUMEnhGH5ooZ6PJaMKo1lAghYtoSsBJeojHHz+fjbfVXGDkKacn",
+	"epzlkMInpG9nkS5xn5caKa6/7TuVqfQcPVMnUoP7RfiunJhjYT1yWTwps4h9xJYlZiSoSUZVkghIwGeE",
+	"FJ4q9EvY8B1sUTST7RW4m6+L8758JcMIwx5Ej1R5MxC6VFr9buS7g/53PpkMqWS77rCnJHB5zK4X20qd",
+	"wP+v44glUWkt/bLhhZBl2V4RJBdhR8l1Am598e0Tiq/DllHtm2Y5DHHn2bPzRDk1x28mxVd9L63DNNdJ",
+	"K+LxSuX1EUqe5S9pObbU2XQjCb4vWkWovPPiS05/m3BPPV0wb0svsYpivlxf+Z1a1ltbb0HQ5M4q/hvY",
+	"1qLZWt/VPwMAAP//zV1ymC0MAAA=",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

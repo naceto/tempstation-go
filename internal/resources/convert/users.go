@@ -20,4 +20,9 @@ type Convert interface {
 
 	// goverter:map ID Id
 	UserAPIFromStorageEmbedded(input models.User) api.UserResponseJSONResponse
+
+	// goverter:useZeroValueOnPointerInconsistency
+	// goverter:map Params.Offset Offset
+	// goverter:map Params.Limit Limit
+	ListUsersAPIToStorage(input *api.GetV1UsersRequestObject) *models.ListUsersParams
 }

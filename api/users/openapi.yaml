@@ -12,6 +12,19 @@ paths:
       tags:
         - users
       summary: Get all users.
+      parameters:
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            format: int32
+          description: The number of items to skip before starting to collect the result set
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            format: int32
+          description: The numbers of items to return
       responses:
         "200":
           $ref: "#/components/responses/UsersResponse"
