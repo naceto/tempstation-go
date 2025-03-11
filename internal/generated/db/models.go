@@ -13,8 +13,8 @@ import (
 type SensorType string
 
 const (
-	SensorTypeDht11 SensorType = "dht11"
-	SensorTypeDht22 SensorType = "dht22"
+	SensorTypeDHT11 SensorType = "DHT11"
+	SensorTypeDHT22 SensorType = "DHT22"
 )
 
 func (e *SensorType) Scan(src interface{}) error {

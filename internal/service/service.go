@@ -52,12 +52,12 @@ func (s *Service) Start(ctx context.Context) error {
 
 	queries := db.New(s.db)
 	store := storage.NewStorage(queries, s.bs.logger)
-	convert := &convert.ConvertImpl{}
+	c := &convert.ConvertImpl{}
 
 	// Resources
 	genericResource := resources.NewGeneric()
-	sensorsResource := resources.NewSensors(s.bs.logger, store)
-	usersResource := resources.NewUsers(s.bs.logger, convert, store)
+	sensorsResource := resources.NewSensors(s.bs.logger, c, store)
+	usersResource := resources.NewUsers(s.bs.logger, c, store)
 
 	// Handlers
 	root := http.NewServeMux()

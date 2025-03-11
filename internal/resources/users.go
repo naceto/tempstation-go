@@ -28,7 +28,7 @@ func NewUsers(log *slog.Logger, convert convert.Convert, store storage.Storage) 
 
 // (GET /v1/users)
 func (u *Users) GetV1Users(ctx context.Context, request api.GetV1UsersRequestObject) (api.GetV1UsersResponseObject, error) {
-	params := u.convert.ListUsersAPIToStorage(&request)
+	params := u.convert.ListUsersAPIToStorage(request)
 	users, err := u.store.ListUsers(ctx, params)
 	if err != nil {
 		u.log.Error("resources.GetV1Users", "store.ListUser error", err)
@@ -53,7 +53,7 @@ func (u *Users) GetV1UsersId(ctx context.Context, request api.GetV1UsersIdReques
 
 // (POST /v1/users)
 func (u *Users) PostV1Users(ctx context.Context, request api.PostV1UsersRequestObject) (api.PostV1UsersResponseObject, error) {
-	createUser := u.convert.CreateUserAPIToStorage(&request)
+	createUser := u.convert.PostUserAPIToStorage(&request)
 
 	if err := validate.CreateUser(createUser); err != nil {
 		u.log.Error("resources.PostV1Users", "validate.CreateUser error", err)

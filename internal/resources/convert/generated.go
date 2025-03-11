@@ -4,13 +4,99 @@
 package convert
 
 import (
+	sensors "github.com/naceto/tempstation/internal/generated/api/sensors"
 	users "github.com/naceto/tempstation/internal/generated/api/users"
 	models "github.com/naceto/tempstation/internal/storage/models"
 )
 
 type ConvertImpl struct{}
 
-func (c *ConvertImpl) CreateUserAPIToStorage(source *users.PostV1UsersRequestObject) *models.CreateUser {
+func (c *ConvertImpl) GetUserAPIFromStorage(source *models.User) *users.GetV1UsersId200JSONResponse {
+	var pApiGetV1UsersId200JSONResponse *users.GetV1UsersId200JSONResponse
+	if source != nil {
+		var apiGetV1UsersId200JSONResponse users.GetV1UsersId200JSONResponse
+		apiGetV1UsersId200JSONResponse.UserResponseJSONResponse = c.UserAPIFromStorageEmbedded((*source))
+		pApiGetV1UsersId200JSONResponse = &apiGetV1UsersId200JSONResponse
+	}
+	return pApiGetV1UsersId200JSONResponse
+}
+func (c *ConvertImpl) ListSensorsAPIFromStorage(source []*models.Sensor) sensors.GetV1Sensors200JSONResponse {
+	return ListSensorsAPIFromStorage(source)
+}
+func (c *ConvertImpl) ListSensorsAPIToStorage(source sensors.GetV1SensorsRequestObject) *models.ListSensorsParams {
+	var modelsListSensorsParams models.ListSensorsParams
+	if source.Params.Limit != nil {
+		modelsListSensorsParams.Limit = *source.Params.Limit
+	}
+	if source.Params.Offset != nil {
+		modelsListSensorsParams.Offset = *source.Params.Offset
+	}
+	return &modelsListSensorsParams
+}
+func (c *ConvertImpl) ListUsersAPIFromStorage(source []*models.User) users.GetV1Users200JSONResponse {
+	return ListUsersAPIFromStorageExtend(source)
+}
+func (c *ConvertImpl) ListUsersAPIToStorage(source users.GetV1UsersRequestObject) *models.ListUsersParams {
+	var modelsListUsersParams models.ListUsersParams
+	if source.Params.Limit != nil {
+		modelsListUsersParams.Limit = *source.Params.Limit
+	}
+	if source.Params.Offset != nil {
+		modelsListUsersParams.Offset = *source.Params.Offset
+	}
+	return &modelsListUsersParams
+}
+func (c *ConvertImpl) PostSensorAPIFromStorage(source *models.Sensor) *sensors.PostV1Sensors200JSONResponse {
+	var pApiPostV1Sensors200JSONResponse *sensors.PostV1Sensors200JSONResponse
+	if source != nil {
+		var apiPostV1Sensors200JSONResponse sensors.PostV1Sensors200JSONResponse
+		apiPostV1Sensors200JSONResponse.SensorResponseJSONResponse = c.SensorAPIFromStorageEmbedded((*source))
+		pApiPostV1Sensors200JSONResponse = &apiPostV1Sensors200JSONResponse
+	}
+	return pApiPostV1Sensors200JSONResponse
+}
+func (c *ConvertImpl) PostSensorsAPIToStorage(source sensors.PostV1SensorsRequestObject) *models.CreateSensor {
+	var modelsCreateSensor models.CreateSensor
+	var pInt64 *int64
+	if source.Body != nil {
+		pInt64 = &source.Body.UserId
+	}
+	if pInt64 != nil {
+		modelsCreateSensor.UserID = *pInt64
+	}
+	var pString *string
+	if source.Body != nil {
+		pString = &source.Body.Name
+	}
+	if pString != nil {
+		modelsCreateSensor.Name = *pString
+	}
+	var pApiSensorType *sensors.SensorType
+	if source.Body != nil {
+		pApiSensorType = &source.Body.Type
+	}
+	if pApiSensorType != nil {
+		modelsCreateSensor.Type = c.apiSensorTypeToModelsSensorType(*pApiSensorType)
+	}
+	var pString2 *string
+	if source.Body != nil {
+		pString2 = &source.Body.Mac
+	}
+	if pString2 != nil {
+		modelsCreateSensor.MacAddress = *pString2
+	}
+	return &modelsCreateSensor
+}
+func (c *ConvertImpl) PostUserAPIFromStorage(source *models.User) *users.PostV1Users200JSONResponse {
+	var pApiPostV1Users200JSONResponse *users.PostV1Users200JSONResponse
+	if source != nil {
+		var apiPostV1Users200JSONResponse users.PostV1Users200JSONResponse
+		apiPostV1Users200JSONResponse.UserResponseJSONResponse = c.UserAPIFromStorageEmbedded((*source))
+		pApiPostV1Users200JSONResponse = &apiPostV1Users200JSONResponse
+	}
+	return pApiPostV1Users200JSONResponse
+}
+func (c *ConvertImpl) PostUserAPIToStorage(source *users.PostV1UsersRequestObject) *models.CreateUser {
 	var pModelsCreateUser *models.CreateUser
 	if source != nil {
 		var modelsCreateUser models.CreateUser
@@ -32,40 +118,14 @@ func (c *ConvertImpl) CreateUserAPIToStorage(source *users.PostV1UsersRequestObj
 	}
 	return pModelsCreateUser
 }
-func (c *ConvertImpl) GetUserAPIFromStorage(source *models.User) *users.GetV1UsersId200JSONResponse {
-	var pApiGetV1UsersId200JSONResponse *users.GetV1UsersId200JSONResponse
-	if source != nil {
-		var apiGetV1UsersId200JSONResponse users.GetV1UsersId200JSONResponse
-		apiGetV1UsersId200JSONResponse.UserResponseJSONResponse = c.UserAPIFromStorageEmbedded((*source))
-		pApiGetV1UsersId200JSONResponse = &apiGetV1UsersId200JSONResponse
-	}
-	return pApiGetV1UsersId200JSONResponse
-}
-func (c *ConvertImpl) ListUsersAPIFromStorage(source []*models.User) users.GetV1Users200JSONResponse {
-	return ListUsersAPIFromStorageExtend(source)
-}
-func (c *ConvertImpl) ListUsersAPIToStorage(source *users.GetV1UsersRequestObject) *models.ListUsersParams {
-	var pModelsListUsersParams *models.ListUsersParams
-	if source != nil {
-		var modelsListUsersParams models.ListUsersParams
-		if (*source).Params.Limit != nil {
-			modelsListUsersParams.Limit = *(*source).Params.Limit
-		}
-		if (*source).Params.Offset != nil {
-			modelsListUsersParams.Offset = *(*source).Params.Offset
-		}
-		pModelsListUsersParams = &modelsListUsersParams
-	}
-	return pModelsListUsersParams
-}
-func (c *ConvertImpl) PostUserAPIFromStorage(source *models.User) *users.PostV1Users200JSONResponse {
-	var pApiPostV1Users200JSONResponse *users.PostV1Users200JSONResponse
-	if source != nil {
-		var apiPostV1Users200JSONResponse users.PostV1Users200JSONResponse
-		apiPostV1Users200JSONResponse.UserResponseJSONResponse = c.UserAPIFromStorageEmbedded((*source))
-		pApiPostV1Users200JSONResponse = &apiPostV1Users200JSONResponse
-	}
-	return pApiPostV1Users200JSONResponse
+func (c *ConvertImpl) SensorAPIFromStorageEmbedded(source models.Sensor) sensors.SensorResponseJSONResponse {
+	var apiSensorResponseJSONResponse sensors.SensorResponseJSONResponse
+	apiSensorResponseJSONResponse.Id = source.ID
+	apiSensorResponseJSONResponse.Mac = source.MacAddress
+	apiSensorResponseJSONResponse.Name = source.Name
+	apiSensorResponseJSONResponse.Type = c.modelsSensorTypeToApiSensorType(source.Type)
+	apiSensorResponseJSONResponse.UserId = source.UserID
+	return apiSensorResponseJSONResponse
 }
 func (c *ConvertImpl) UserAPIFromStorageEmbedded(source models.User) users.UserResponseJSONResponse {
 	var apiUserResponseJSONResponse users.UserResponseJSONResponse
@@ -76,4 +136,26 @@ func (c *ConvertImpl) UserAPIFromStorageEmbedded(source models.User) users.UserR
 	pString2 := source.Name
 	apiUserResponseJSONResponse.Name = &pString2
 	return apiUserResponseJSONResponse
+}
+func (c *ConvertImpl) apiSensorTypeToModelsSensorType(source sensors.SensorType) models.SensorType {
+	var modelsSensorType models.SensorType
+	switch source {
+	case sensors.SensorTypeDHT11:
+		modelsSensorType = models.SensorTypeDHT11
+	case sensors.SensorTypeDHT22:
+		modelsSensorType = models.SensorTypeDHT22
+	default: // ignored
+	}
+	return modelsSensorType
+}
+func (c *ConvertImpl) modelsSensorTypeToApiSensorType(source models.SensorType) sensors.SensorType {
+	var apiSensorType sensors.SensorType
+	switch source {
+	case models.SensorTypeDHT11:
+		apiSensorType = sensors.SensorTypeDHT11
+	case models.SensorTypeDHT22:
+		apiSensorType = sensors.SensorTypeDHT22
+	default: // ignored
+	}
+	return apiSensorType
 }

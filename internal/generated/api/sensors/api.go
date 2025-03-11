@@ -20,6 +20,7 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 	externalRef0 "github.com/naceto/tempstation/internal/generated/api/common"
+	"github.com/oapi-codegen/runtime"
 	strictnethttp "github.com/oapi-codegen/runtime/strictmiddleware/nethttp"
 )
 
@@ -75,8 +76,22 @@ type SensorsDataResponse struct {
 	Sensors []SensorData `json:"sensors"`
 }
 
+// SensorsResponse List of sensors.
+type SensorsResponse struct {
+	Sensors []Sensor `json:"sensors"`
+}
+
 // SensorResponse Sensor specific information.
 type SensorResponse = Sensor
+
+// GetV1SensorsParams defines parameters for GetV1Sensors.
+type GetV1SensorsParams struct {
+	// Offset The number of items to skip before starting to collect the result set
+	Offset *int32 `form:"offset,omitempty" json:"offset,omitempty"`
+
+	// Limit The numbers of items to return
+	Limit *int32 `form:"limit,omitempty" json:"limit,omitempty"`
+}
 
 // PostV1SensorsJSONRequestBody defines body for PostV1Sensors for application/json ContentType.
 type PostV1SensorsJSONRequestBody = SensorPost
@@ -85,7 +100,7 @@ type PostV1SensorsJSONRequestBody = SensorPost
 type ServerInterface interface {
 
 	// (GET /v1/sensors)
-	GetV1Sensors(w http.ResponseWriter, r *http.Request)
+	GetV1Sensors(w http.ResponseWriter, r *http.Request, params GetV1SensorsParams)
 
 	// (POST /v1/sensors)
 	PostV1Sensors(w http.ResponseWriter, r *http.Request)
@@ -103,8 +118,29 @@ type MiddlewareFunc func(http.Handler) http.Handler
 // GetV1Sensors operation middleware
 func (siw *ServerInterfaceWrapper) GetV1Sensors(w http.ResponseWriter, r *http.Request) {
 
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetV1SensorsParams
+
+	// ------------- Optional query parameter "offset" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "offset", r.URL.Query(), &params.Offset)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "offset", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "limit", r.URL.Query(), &params.Limit)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		return
+	}
+
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetV1Sensors(w, r)
+		siw.Handler.GetV1Sensors(w, r, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -258,16 +294,17 @@ type SensorResponseJSONResponse Sensor
 
 type SensorsDataResponseJSONResponse SensorsDataResponse
 
+type SensorsResponseJSONResponse SensorsResponse
+
 type GetV1SensorsRequestObject struct {
+	Params GetV1SensorsParams
 }
 
 type GetV1SensorsResponseObject interface {
 	VisitGetV1SensorsResponse(w http.ResponseWriter) error
 }
 
-type GetV1Sensors200JSONResponse struct {
-	SensorsDataResponseJSONResponse
-}
+type GetV1Sensors200JSONResponse struct{ SensorsResponseJSONResponse }
 
 func (response GetV1Sensors200JSONResponse) VisitGetV1SensorsResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -369,8 +406,10 @@ type strictHandler struct {
 }
 
 // GetV1Sensors operation middleware
-func (sh *strictHandler) GetV1Sensors(w http.ResponseWriter, r *http.Request) {
+func (sh *strictHandler) GetV1Sensors(w http.ResponseWriter, r *http.Request, params GetV1SensorsParams) {
 	var request GetV1SensorsRequestObject
+
+	request.Params = params
 
 	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
 		return sh.ssi.GetV1Sensors(ctx, request.(GetV1SensorsRequestObject))
@@ -426,18 +465,20 @@ func (sh *strictHandler) PostV1Sensors(w http.ResponseWriter, r *http.Request) {
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

@@ -1,5 +1,5 @@
 -- create sensors type enum
-CREATE TYPE sensor_type AS ENUM ('dht11', 'dht22');
+CREATE TYPE sensor_type AS ENUM ('DHT11', 'DHT22');
 
 -- create sensors table
 CREATE TABLE sensors (

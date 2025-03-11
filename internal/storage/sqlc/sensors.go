@@ -43,8 +43,13 @@ func (s *storage) GetSensor(ctx context.Context, id int64) (*models.Sensor, erro
 }
 
 func (s *storage) ListSensors(ctx context.Context, params *models.ListSensorsParams) ([]*models.Sensor, error) {
+	var limit int32 = 10
+	if params.Limit != 0 {
+		limit = params.Limit
+	}
+
 	sensors, err := s.db.ListSensors(ctx, db.ListSensorsParams{
-		Limit:  params.Limit,
+		Limit:  limit,
 		Offset: params.Offset,
 	})
 	if err != nil {
