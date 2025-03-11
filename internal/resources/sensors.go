@@ -43,6 +43,7 @@ func (s *Sensors) PostV1Sensors(ctx context.Context, request api.PostV1SensorsRe
 	sensorModel := s.convert.PostSensorsAPIToStorage(request)
 	sensor, err := s.store.CreateSensor(ctx, sensorModel)
 	if err != nil {
+		s.log.Error("resources.PostV1Sensors", "store.CreateSensor error", err)
 		return nil, err
 	}
 
