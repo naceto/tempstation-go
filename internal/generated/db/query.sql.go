@@ -26,7 +26,7 @@ type CreateSensorParams struct {
 }
 
 func (q *Queries) CreateSensor(ctx context.Context, arg CreateSensorParams) (Sensor, error) {
-	row := q.db.QueryRowContext(ctx, createSensor,
+	row := q.db.QueryRow(ctx, createSensor,
 		arg.UserID,
 		arg.Name,
 		arg.Type,
@@ -58,7 +58,7 @@ type CreateUserParams struct {
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, createUser, arg.Name, arg.Email)
+	row := q.db.QueryRow(ctx, createUser, arg.Name, arg.Email)
 	var i User
 	err := row.Scan(&i.ID, &i.Name, &i.Email)
 	return i, err
@@ -70,7 +70,7 @@ WHERE id = $1
 `
 
 func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
-	_, err := q.db.ExecContext(ctx, deleteUser, id)
+	_, err := q.db.Exec(ctx, deleteUser, id)
 	return err
 }
 
@@ -80,7 +80,7 @@ WHERE id = $1 LIMIT 1
 `
 
 func (q *Queries) GetSensor(ctx context.Context, id int64) (Sensor, error) {
-	row := q.db.QueryRowContext(ctx, getSensor, id)
+	row := q.db.QueryRow(ctx, getSensor, id)
 	var i Sensor
 	err := row.Scan(
 		&i.ID,
@@ -98,7 +98,7 @@ WHERE id = $1 LIMIT 1
 `
 
 func (q *Queries) GetUser(ctx context.Context, id int64) (User, error) {
-	row := q.db.QueryRowContext(ctx, getUser, id)
+	row := q.db.QueryRow(ctx, getUser, id)
 	var i User
 	err := row.Scan(&i.ID, &i.Name, &i.Email)
 	return i, err
@@ -116,7 +116,7 @@ type ListSensorsParams struct {
 }
 
 func (q *Queries) ListSensors(ctx context.Context, arg ListSensorsParams) ([]Sensor, error) {
-	rows, err := q.db.QueryContext(ctx, listSensors, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, listSensors, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -134,9 +134,6 @@ func (q *Queries) ListSensors(ctx context.Context, arg ListSensorsParams) ([]Sen
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -156,7 +153,7 @@ type ListUsersParams struct {
 }
 
 func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error) {
-	rows, err := q.db.QueryContext(ctx, listUsers, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, listUsers, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -168,9 +165,6 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, e
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -194,7 +188,7 @@ type UpdateUserParams struct {
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, updateUser, arg.ID, arg.Name, arg.Email)
+	row := q.db.QueryRow(ctx, updateUser, arg.ID, arg.Name, arg.Email)
 	var i User
 	err := row.Scan(&i.ID, &i.Name, &i.Email)
 	return i, err

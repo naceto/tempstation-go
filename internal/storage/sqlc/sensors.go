@@ -30,6 +30,7 @@ func (s *storage) CreateSensor(ctx context.Context, sensor *models.CreateSensor)
 func (s *storage) GetSensor(ctx context.Context, id int64) (*models.Sensor, error) {
 	sensor, err := s.db.GetSensor(ctx, id)
 	if err != nil {
+		s.log.Error("GetSensor", "error", err)
 		return nil, err
 	}
 

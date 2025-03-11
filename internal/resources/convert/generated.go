@@ -11,6 +11,15 @@ import (
 
 type ConvertImpl struct{}
 
+func (c *ConvertImpl) GetSensorAPIFromStorage(source *models.Sensor) *sensors.GetV1SensorsId200JSONResponse {
+	var pApiGetV1SensorsId200JSONResponse *sensors.GetV1SensorsId200JSONResponse
+	if source != nil {
+		var apiGetV1SensorsId200JSONResponse sensors.GetV1SensorsId200JSONResponse
+		apiGetV1SensorsId200JSONResponse.SensorResponseJSONResponse = c.SensorAPIFromStorageEmbedded((*source))
+		pApiGetV1SensorsId200JSONResponse = &apiGetV1SensorsId200JSONResponse
+	}
+	return pApiGetV1SensorsId200JSONResponse
+}
 func (c *ConvertImpl) GetUserAPIFromStorage(source *models.User) *users.GetV1UsersId200JSONResponse {
 	var pApiGetV1UsersId200JSONResponse *users.GetV1UsersId200JSONResponse
 	if source != nil {

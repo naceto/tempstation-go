@@ -82,10 +82,14 @@ func (s *Service) Start(ctx context.Context) error {
 	}
 
 	root.Handle("/api/swagger-ui/", http.StripPrefix("/api/swagger-ui", http.FileServerFS(web.Content)))
+
 	uh := http.StripPrefix("/api", strictMiddleware.OapiRequestValidator(uSwagger)(usersHandler))
 	root.Handle("/api/v1/users", uh)
 	root.Handle("/api/v1/users/", uh)
-	root.Handle("/api/v1/sensors", http.StripPrefix("/api", strictMiddleware.OapiRequestValidator(sSwagger)(sensorsHandler)))
+
+	sh := http.StripPrefix("/api", strictMiddleware.OapiRequestValidator(sSwagger)(sensorsHandler))
+	root.Handle("/api/v1/sensors", sh)
+	root.Handle("/api/v1/sensors/", sh)
 
 	logWrapper := middleware.NewLogger(s.bs.logger, root)
 	return http.ListenAndServe(":8080", logWrapper)
@@ -93,7 +97,7 @@ func (s *Service) Start(ctx context.Context) error {
 
 func (s *Service) Stop(ctx context.Context) error {
 	if s.db != nil {
-		err := s.db.Close()
+		err := s.db.Close(ctx)
 		if err != nil {
 			s.bs.logger.Error("Closing DB connection failed", "error", err)
 			return err

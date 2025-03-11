@@ -54,6 +54,9 @@ type Convert interface {
 	// goverter:map MacAddress Mac
 	// goverter:map UserID UserId
 	SensorAPIFromStorageEmbedded(input models.Sensor) apiS.SensorResponseJSONResponse
+
+	// goverter:map . SensorResponseJSONResponse
+	GetSensorAPIFromStorage(input *models.Sensor) *apiS.GetV1SensorsId200JSONResponse
 }
 
 func ListUsersAPIFromStorageExtend(input []*models.User) apiU.GetV1Users200JSONResponse {

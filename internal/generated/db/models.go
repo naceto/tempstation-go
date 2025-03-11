@@ -7,7 +7,8 @@ package db
 import (
 	"database/sql/driver"
 	"fmt"
-	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type SensorType string
@@ -65,7 +66,7 @@ type SensorDatum struct {
 	SensorID    int64
 	Temperature float32
 	Humidity    float32
-	ReadingTime time.Time
+	ReadingTime pgtype.Timestamptz
 }
 
 type User struct {

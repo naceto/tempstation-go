@@ -43,6 +43,25 @@ paths:
           $ref: "../common/openapi.yaml#/components/responses/ErrorResponse"
         "500":
           $ref: "../common/openapi.yaml#/components/responses/ErrorResponse"
+  /v1/sensors/{id}:
+    get:
+      tags:
+        - sensors
+      summary: Get a sensor by ID.
+      parameters:
+        - name: id
+          in: path
+          description: Sensor ID
+          required: true
+          schema:
+            $ref: "../common/openapi.yaml#/components/schemas/ID"
+      responses:
+        "200":
+          $ref: "#/components/responses/SensorResponse"
+        "400":
+          $ref: "../common/openapi.yaml#/components/responses/ErrorResponse"
+        "500":
+          $ref: "../common/openapi.yaml#/components/responses/ErrorResponse"
 
 components:
   requestBodies:
