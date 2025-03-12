@@ -2,41 +2,42 @@ package sqlc
 
 import (
 	"context"
+	"database/sql"
+	"errors"
+	"fmt"
 
 	"github.com/naceto/tempstation/internal/generated/db"
 	"github.com/naceto/tempstation/internal/storage/models"
 )
 
+var ErrUserNotFound = errors.new("user not found")
+
 // CreateUser creates a new user in the storage. It first validates the input parameters
 // using the validation.UserParams function, and if the validation passes, it calls
 // the underlying db.CreateUser function to create the user.
-func (s *storage) CreateUser(ctx context.Context, user *models.CreateUser) (*models.User, error) {
-	u, err := s.db.CreateUser(ctx, db.CreateUserParams{
-		Name:  user.Name,
-		Email: user.Email,
-	})
+func (s *storage) CreateUser(ctx context.Context, createUser *models.CreateUser) (*models.User, error) {
+	params := s.convert.CreateUserModelToDB(createUser)
+	u, err := s.db.CreateUser(ctx, params)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf(FormatStorageError, err)
 	}
 
-	return &models.User{
-		ID:    u.ID,
-		Name:  u.Name,
-		Email: u.Email,
-	}, nil
+	user := s.convert.UserModelFromDB(u)
+	return user, nil
 }
 
 func (s *storage) GetUser(ctx context.Context, id int64) (*models.User, error) {
 	u, err := s.db.GetUser(ctx, id)
 	if err != nil {
-		return nil, err
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrUserNotFound
+		}
+
+		return nil, fmt.Errorf(FormatStorageError, err)
 	}
 
-	return &models.User{
-		ID:    u.ID,
-		Name:  u.Name,
-		Email: u.Email,
-	}, nil
+	user := s.convert.UserModelFromDB(u)
+	return user, nil
 }
 
 func (s *storage) UpdateUser(ctx context.Context, params *models.UpdateUser) (*models.User, error) {
@@ -44,22 +45,20 @@ func (s *storage) UpdateUser(ctx context.Context, params *models.UpdateUser) (*m
 		Name: params.Name,
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf(FormatStorageError, err)
 	}
 
-	return &models.User{
-		ID:    u.ID,
-		Name:  u.Name,
-		Email: u.Email,
-	}, nil
+	user := s.convert.UserModelFromDB(u)
+	return user, nil
 }
 
 // DeleteUser deletes the user with the specified ID from the storage.
 func (s *storage) DeleteUser(ctx context.Context, id int64) error {
-	return s.db.DeleteUser(ctx, id)
+	err := s.db.DeleteUser(ctx, id)
+	return err
 }
 
-// ListUsers returns a list of all users stored in the database.
+// ListUsers returns a list of users paginated by <params>.
 func (s *storage) ListUsers(ctx context.Context, params *models.ListUsersParams) ([]*models.User, error) {
 	var limit int32 = 10
 	if params.Limit != 0 {
@@ -71,17 +70,9 @@ func (s *storage) ListUsers(ctx context.Context, params *models.ListUsersParams)
 		Offset: params.Offset,
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf(FormatStorageError, err)
 	}
 
-	users := []*models.User{}
-	for _, usr := range u {
-		users = append(users, &models.User{
-			ID:    usr.ID,
-			Name:  usr.Name,
-			Email: usr.Email,
-		})
-	}
-
+	users := s.convert.UserModelsFromDB(u)
 	return users, nil
 }

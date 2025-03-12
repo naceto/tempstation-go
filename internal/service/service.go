@@ -14,6 +14,7 @@ import (
 	"github.com/naceto/tempstation/internal/resources/convert"
 	"github.com/naceto/tempstation/internal/service/middleware"
 	storage "github.com/naceto/tempstation/internal/storage/sqlc"
+	storageConvert "github.com/naceto/tempstation/internal/storage/sqlc/convert"
 	"github.com/naceto/tempstation/web"
 	strictMiddleware "github.com/oapi-codegen/nethttp-middleware"
 )
@@ -51,7 +52,8 @@ func (s *Service) Start(ctx context.Context) error {
 	}
 
 	queries := db.New(s.db)
-	store := storage.NewStorage(queries, s.bs.logger)
+	sc := &storageConvert.ConvertImpl{}
+	store := storage.NewStorage(queries, sc, s.bs.logger)
 	c := &convert.ConvertImpl{}
 
 	// Resources

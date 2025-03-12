@@ -56,5 +56,6 @@ mod-update:
 .PHONY: generate
 generate:
 	goverter gen ./internal/resources/convert
+	goverter gen ./internal/storage/sqlc/convert
 
 # mockery
