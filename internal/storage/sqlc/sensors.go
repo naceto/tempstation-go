@@ -2,49 +2,35 @@ package sqlc
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/naceto/tempstation/internal/generated/db"
 	"github.com/naceto/tempstation/internal/storage/models"
 )
 
-func (s *storage) CreateSensor(ctx context.Context, sensor *models.CreateSensor) (*models.Sensor, error) {
-	cs, err := s.db.CreateSensor(ctx, db.CreateSensorParams{
-		UserID:     sensor.UserID,
-		Name:       sensor.Name,
-		Type:       db.SensorType(sensor.Type),
-		MacAddress: sensor.MacAddress,
-	})
+func (s *storage) CreateSensor(ctx context.Context, createSensor *models.CreateSensor) (*models.Sensor, error) {
+	params := s.convert.CreateSensorModelToDB(createSensor)
+	cs, err := s.db.CreateSensor(ctx, params)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf(FormatStorageError, err)
 	}
 
-	return &models.Sensor{
-		ID:         cs.ID,
-		UserID:     cs.UserID,
-		Name:       cs.Name,
-		Type:       models.SensorType(cs.Type),
-		MacAddress: cs.MacAddress,
-	}, nil
+	sensor := s.convert.SensorModelFromDB(cs)
+	return sensor, nil
 }
 
 func (s *storage) GetSensor(ctx context.Context, id int64) (*models.Sensor, error) {
 	sensor, err := s.db.GetSensor(ctx, id)
 	if err != nil {
-		s.log.Error("GetSensor", "error", err)
-		return nil, err
+		return nil, fmt.Errorf(FormatStorageError, err)
 	}
 
-	return &models.Sensor{
-		ID:         sensor.ID,
-		UserID:     sensor.UserID,
-		Name:       sensor.Name,
-		Type:       models.SensorType(sensor.Type),
-		MacAddress: sensor.MacAddress,
-	}, nil
+	sensorModel := s.convert.SensorModelFromDB(sensor)
+	return sensorModel, nil
 }
 
 func (s *storage) ListSensors(ctx context.Context, params *models.ListSensorsParams) ([]*models.Sensor, error) {
-	var limit int32 = 10
+	var limit int32 = DefaultLimit
 	if params.Limit != 0 {
 		limit = params.Limit
 	}
@@ -54,19 +40,9 @@ func (s *storage) ListSensors(ctx context.Context, params *models.ListSensorsPar
 		Offset: params.Offset,
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf(FormatStorageError, err)
 	}
 
-	results := []*models.Sensor{}
-	for _, sen := range sensors {
-		results = append(results, &models.Sensor{
-			ID:         sen.ID,
-			UserID:     sen.UserID,
-			Name:       sen.Name,
-			Type:       models.SensorType(sen.Type),
-			MacAddress: sen.MacAddress,
-		})
-	}
-
-	return results, nil
+	sensorModels := s.convert.SensorModelsFromDB(sensors)
+	return sensorModels, nil
 }

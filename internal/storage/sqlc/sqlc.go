@@ -10,9 +10,10 @@ import (
 )
 
 var (
-	FormatStorageError = "storage error: %w"
-	ErrDuplicateEntry  = errors.New("duplicate entry")
-	ErrInternal        = errors.New("internal server error")
+	DefaultLimit       int32 = 10
+	FormatStorageError       = "storage error: %w"
+	ErrDuplicateEntry        = errors.New("duplicate entry")
+	ErrInternal              = errors.New("internal server error")
 )
 
 type storage struct {
