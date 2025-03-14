@@ -10,6 +10,38 @@ import (
 
 type ConvertImpl struct{}
 
+func (c *ConvertImpl) CreateSensorDataModelFromDB(source db.SensorDatum) *models.SensorData {
+	var modelsSensorData models.SensorData
+	modelsSensorData.ID = source.ID
+	modelsSensorData.SensorID = source.SensorID
+	modelsSensorData.Temperature = source.Temperature
+	modelsSensorData.Humidity = source.Humidity
+	modelsSensorData.ReadingTime = ConvertTimestamptzToTime(source.ReadingTime)
+	return &modelsSensorData
+}
+func (c *ConvertImpl) CreateSensorDataModelToDB(source *models.CreateSensorData) db.CreateSensorDataParams {
+	var dbCreateSensorDataParams db.CreateSensorDataParams
+	if source != nil {
+		var dbCreateSensorDataParams2 db.CreateSensorDataParams
+		dbCreateSensorDataParams2.SensorID = (*source).SensorID
+		dbCreateSensorDataParams2.Temperature = (*source).Temperature
+		dbCreateSensorDataParams2.Humidity = (*source).Humidity
+		dbCreateSensorDataParams = dbCreateSensorDataParams2
+	}
+	return dbCreateSensorDataParams
+}
+func (c *ConvertImpl) CreateSensorModelToDB(source *models.CreateSensor) db.CreateSensorParams {
+	var dbCreateSensorParams db.CreateSensorParams
+	if source != nil {
+		var dbCreateSensorParams2 db.CreateSensorParams
+		dbCreateSensorParams2.UserID = (*source).UserID
+		dbCreateSensorParams2.Name = (*source).Name
+		dbCreateSensorParams2.Type = c.modelsSensorTypeToDbSensorType((*source).Type)
+		dbCreateSensorParams2.MacAddress = (*source).MacAddress
+		dbCreateSensorParams = dbCreateSensorParams2
+	}
+	return dbCreateSensorParams
+}
 func (c *ConvertImpl) CreateUserModelToDB(source *models.CreateUser) db.CreateUserParams {
 	var dbCreateUserParams db.CreateUserParams
 	if source != nil {
@@ -19,6 +51,25 @@ func (c *ConvertImpl) CreateUserModelToDB(source *models.CreateUser) db.CreateUs
 		dbCreateUserParams = dbCreateUserParams2
 	}
 	return dbCreateUserParams
+}
+func (c *ConvertImpl) SensorModelFromDB(source db.Sensor) *models.Sensor {
+	var modelsSensor models.Sensor
+	modelsSensor.ID = source.ID
+	modelsSensor.UserID = source.UserID
+	modelsSensor.Name = source.Name
+	modelsSensor.Type = c.dbSensorTypeToModelsSensorType(source.Type)
+	modelsSensor.MacAddress = source.MacAddress
+	return &modelsSensor
+}
+func (c *ConvertImpl) SensorModelsFromDB(source []db.Sensor) []*models.Sensor {
+	var pModelsSensorList []*models.Sensor
+	if source != nil {
+		pModelsSensorList = make([]*models.Sensor, len(source))
+		for i := 0; i < len(source); i++ {
+			pModelsSensorList[i] = c.SensorModelFromDB(source[i])
+		}
+	}
+	return pModelsSensorList
 }
 func (c *ConvertImpl) UserModelFromDB(source db.User) *models.User {
 	var modelsUser models.User
@@ -36,4 +87,26 @@ func (c *ConvertImpl) UserModelsFromDB(source []db.User) []*models.User {
 		}
 	}
 	return pModelsUserList
+}
+func (c *ConvertImpl) dbSensorTypeToModelsSensorType(source db.SensorType) models.SensorType {
+	var modelsSensorType models.SensorType
+	switch source {
+	case db.SensorTypeDHT11:
+		modelsSensorType = models.SensorTypeDHT11
+	case db.SensorTypeDHT22:
+		modelsSensorType = models.SensorTypeDHT22
+	default: // ignored
+	}
+	return modelsSensorType
+}
+func (c *ConvertImpl) modelsSensorTypeToDbSensorType(source models.SensorType) db.SensorType {
+	var dbSensorType db.SensorType
+	switch source {
+	case models.SensorTypeDHT11:
+		dbSensorType = db.SensorTypeDHT11
+	case models.SensorTypeDHT22:
+		dbSensorType = db.SensorTypeDHT22
+	default: // ignored
+	}
+	return dbSensorType
 }

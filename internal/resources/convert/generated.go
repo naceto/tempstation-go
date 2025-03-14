@@ -64,7 +64,7 @@ func (c *ConvertImpl) PostSensorAPIFromStorage(source *models.Sensor) *sensors.P
 	}
 	return pApiPostV1Sensors200JSONResponse
 }
-func (c *ConvertImpl) PostSensorsAPIToStorage(source sensors.PostV1SensorsRequestObject) *models.CreateSensor {
+func (c *ConvertImpl) PostSensorAPIToStorage(source sensors.PostV1SensorsRequestObject) *models.CreateSensor {
 	var modelsCreateSensor models.CreateSensor
 	var pInt64 *int64
 	if source.Body != nil {
@@ -95,6 +95,31 @@ func (c *ConvertImpl) PostSensorsAPIToStorage(source sensors.PostV1SensorsReques
 		modelsCreateSensor.MacAddress = *pString2
 	}
 	return &modelsCreateSensor
+}
+func (c *ConvertImpl) PostSensorDataAPIToStorage(source sensors.PostV1SensorsIdDataRequestObject) *models.CreateSensorData {
+	var modelsCreateSensorData models.CreateSensorData
+	var pInt64 *int64
+	if source.Body != nil {
+		pInt64 = &source.Body.SensorId
+	}
+	if pInt64 != nil {
+		modelsCreateSensorData.SensorID = *pInt64
+	}
+	var pFloat32 *float32
+	if source.Body != nil {
+		pFloat32 = &source.Body.Temperature
+	}
+	if pFloat32 != nil {
+		modelsCreateSensorData.Temperature = *pFloat32
+	}
+	var pFloat322 *float32
+	if source.Body != nil {
+		pFloat322 = &source.Body.Humidity
+	}
+	if pFloat322 != nil {
+		modelsCreateSensorData.Humidity = *pFloat322
+	}
+	return &modelsCreateSensorData
 }
 func (c *ConvertImpl) PostUserAPIFromStorage(source *models.User) *users.PostV1Users200JSONResponse {
 	var pApiPostV1Users200JSONResponse *users.PostV1Users200JSONResponse
@@ -135,6 +160,24 @@ func (c *ConvertImpl) SensorAPIFromStorageEmbedded(source models.Sensor) sensors
 	apiSensorResponseJSONResponse.Type = c.modelsSensorTypeToApiSensorType(source.Type)
 	apiSensorResponseJSONResponse.UserId = source.UserID
 	return apiSensorResponseJSONResponse
+}
+func (c *ConvertImpl) SensorDataAPIFromStorage(source *models.SensorData) *sensors.PostV1SensorsIdData200JSONResponse {
+	var pApiPostV1SensorsIdData200JSONResponse *sensors.PostV1SensorsIdData200JSONResponse
+	if source != nil {
+		var apiPostV1SensorsIdData200JSONResponse sensors.PostV1SensorsIdData200JSONResponse
+		apiPostV1SensorsIdData200JSONResponse.SensorDataResponseJSONResponse = c.SensorDataAPIFromStorageEmbedded((*source))
+		pApiPostV1SensorsIdData200JSONResponse = &apiPostV1SensorsIdData200JSONResponse
+	}
+	return pApiPostV1SensorsIdData200JSONResponse
+}
+func (c *ConvertImpl) SensorDataAPIFromStorageEmbedded(source models.SensorData) sensors.SensorDataResponseJSONResponse {
+	var apiSensorDataResponseJSONResponse sensors.SensorDataResponseJSONResponse
+	apiSensorDataResponseJSONResponse.Humidity = source.Humidity
+	apiSensorDataResponseJSONResponse.Id = source.ID
+	apiSensorDataResponseJSONResponse.ReadingTime = ConvertTimeToString(source.ReadingTime)
+	apiSensorDataResponseJSONResponse.SensorId = source.SensorID
+	apiSensorDataResponseJSONResponse.Temperature = source.Temperature
+	return apiSensorDataResponseJSONResponse
 }
 func (c *ConvertImpl) UserAPIFromStorageEmbedded(source models.User) users.UserResponseJSONResponse {
 	var apiUserResponseJSONResponse users.UserResponseJSONResponse

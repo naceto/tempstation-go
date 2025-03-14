@@ -16,7 +16,6 @@ import (
 	"net/url"
 	"path"
 	"strings"
-	"time"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	externalRef0 "github.com/naceto/tempstation/internal/generated/api/common"
@@ -49,11 +48,18 @@ type Sensor struct {
 
 // SensorData Sensor climate data.
 type SensorData struct {
-	Humidity    *float32   `json:"humidity,omitempty"`
-	Id          *int64     `json:"id,omitempty"`
-	ReadingTime *time.Time `json:"readingTime,omitempty"`
-	SensorId    *int64     `json:"sensorId,omitempty"`
-	Temperature *float32   `json:"temperature,omitempty"`
+	Humidity    float32 `json:"humidity"`
+	Id          int64   `json:"id"`
+	ReadingTime string  `json:"readingTime"`
+	SensorId    int64   `json:"sensorId"`
+	Temperature float32 `json:"temperature"`
+}
+
+// SensorDataPost Sensor post climate data.
+type SensorDataPost struct {
+	Humidity    float32 `json:"humidity"`
+	SensorId    int64   `json:"sensorId"`
+	Temperature float32 `json:"temperature"`
 }
 
 // SensorPost Sensor specific information.
@@ -81,6 +87,9 @@ type SensorsResponse struct {
 	Sensors []Sensor `json:"sensors"`
 }
 
+// SensorDataResponse Sensor climate data.
+type SensorDataResponse = SensorData
+
 // SensorResponse Sensor specific information.
 type SensorResponse = Sensor
 
@@ -96,6 +105,9 @@ type GetV1SensorsParams struct {
 // PostV1SensorsJSONRequestBody defines body for PostV1Sensors for application/json ContentType.
 type PostV1SensorsJSONRequestBody = SensorPost
 
+// PostV1SensorsIdDataJSONRequestBody defines body for PostV1SensorsIdData for application/json ContentType.
+type PostV1SensorsIdDataJSONRequestBody = SensorDataPost
+
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 
@@ -107,6 +119,9 @@ type ServerInterface interface {
 	// Get a sensor by ID.
 	// (GET /v1/sensors/{id})
 	GetV1SensorsId(w http.ResponseWriter, r *http.Request, id externalRef0.ID)
+	// Post sensor data.
+	// (POST /v1/sensors/{id}/data)
+	PostV1SensorsIdData(w http.ResponseWriter, r *http.Request, id externalRef0.ID)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -183,6 +198,31 @@ func (siw *ServerInterfaceWrapper) GetV1SensorsId(w http.ResponseWriter, r *http
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetV1SensorsId(w, r, id)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// PostV1SensorsIdData operation middleware
+func (siw *ServerInterfaceWrapper) PostV1SensorsIdData(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id externalRef0.ID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", r.PathValue("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PostV1SensorsIdData(w, r, id)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -315,9 +355,12 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc("GET "+options.BaseURL+"/v1/sensors", wrapper.GetV1Sensors)
 	m.HandleFunc("POST "+options.BaseURL+"/v1/sensors", wrapper.PostV1Sensors)
 	m.HandleFunc("GET "+options.BaseURL+"/v1/sensors/{id}", wrapper.GetV1SensorsId)
+	m.HandleFunc("POST "+options.BaseURL+"/v1/sensors/{id}/data", wrapper.PostV1SensorsIdData)
 
 	return m
 }
+
+type SensorDataResponseJSONResponse SensorData
 
 type SensorResponseJSONResponse Sensor
 
@@ -430,6 +473,42 @@ func (response GetV1SensorsId500JSONResponse) VisitGetV1SensorsIdResponse(w http
 	return json.NewEncoder(w).Encode(response)
 }
 
+type PostV1SensorsIdDataRequestObject struct {
+	Id   externalRef0.ID `json:"id"`
+	Body *PostV1SensorsIdDataJSONRequestBody
+}
+
+type PostV1SensorsIdDataResponseObject interface {
+	VisitPostV1SensorsIdDataResponse(w http.ResponseWriter) error
+}
+
+type PostV1SensorsIdData200JSONResponse struct{ SensorDataResponseJSONResponse }
+
+func (response PostV1SensorsIdData200JSONResponse) VisitPostV1SensorsIdDataResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostV1SensorsIdData400JSONResponse struct{ externalRef0.ErrorResponse }
+
+func (response PostV1SensorsIdData400JSONResponse) VisitPostV1SensorsIdDataResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostV1SensorsIdData500JSONResponse Error
+
+func (response PostV1SensorsIdData500JSONResponse) VisitPostV1SensorsIdDataResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
 
@@ -441,6 +520,9 @@ type StrictServerInterface interface {
 	// Get a sensor by ID.
 	// (GET /v1/sensors/{id})
 	GetV1SensorsId(ctx context.Context, request GetV1SensorsIdRequestObject) (GetV1SensorsIdResponseObject, error)
+	// Post sensor data.
+	// (POST /v1/sensors/{id}/data)
+	PostV1SensorsIdData(ctx context.Context, request PostV1SensorsIdDataRequestObject) (PostV1SensorsIdDataResponseObject, error)
 }
 
 type StrictHandlerFunc = strictnethttp.StrictHTTPHandlerFunc
@@ -555,24 +637,58 @@ func (sh *strictHandler) GetV1SensorsId(w http.ResponseWriter, r *http.Request, 
 	}
 }
 
+// PostV1SensorsIdData operation middleware
+func (sh *strictHandler) PostV1SensorsIdData(w http.ResponseWriter, r *http.Request, id externalRef0.ID) {
+	var request PostV1SensorsIdDataRequestObject
+
+	request.Id = id
+
+	var body PostV1SensorsIdDataJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.PostV1SensorsIdData(ctx, request.(PostV1SensorsIdDataRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostV1SensorsIdData")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(PostV1SensorsIdDataResponseObject); ok {
+		if err := validResponse.VisitPostV1SensorsIdDataResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

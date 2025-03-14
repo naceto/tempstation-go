@@ -46,3 +46,14 @@ func (s *storage) ListSensors(ctx context.Context, params *models.ListSensorsPar
 	sensorModels := s.convert.SensorModelsFromDB(sensors)
 	return sensorModels, nil
 }
+
+func (s *storage) CreateSensorData(ctx context.Context, data *models.CreateSensorData) (*models.SensorData, error) {
+	dbData := s.convert.CreateSensorDataModelToDB(data)
+	sd, err := s.db.CreateSensorData(ctx, dbData)
+	if err != nil {
+		return nil, fmt.Errorf(FormatStorageError, err)
+	}
+
+	modelSensorData := s.convert.CreateSensorDataModelFromDB(sd)
+	return modelSensorData, nil
+}

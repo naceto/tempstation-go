@@ -62,15 +62,43 @@ paths:
           $ref: "../common/openapi.yaml#/components/responses/ErrorResponse"
         "500":
           $ref: "../common/openapi.yaml#/components/responses/ErrorResponse"
+  /v1/sensors/{id}/data:
+    post:
+      tags:
+        - sensors
+      summary: Post sensor data.
+      parameters:
+        - name: id
+          in: path
+          description: Sensor ID
+          required: true
+          schema:
+            $ref: "../common/openapi.yaml#/components/schemas/ID"
+      requestBody:
+        $ref: "#/components/requestBodies/SensorDataPost"
+      responses:
+        "200":
+          $ref: "#/components/responses/SensorDataResponse"
+        "400":
+          $ref: "../common/openapi.yaml#/components/responses/ErrorResponse"
+        "500":
+          $ref: "../common/openapi.yaml#/components/responses/ErrorResponse"
 
 components:
   requestBodies:
     SensorPost:
-      description: The new sensor data to add.
+      description: The new sensor to add.
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/SensorPost"
+
+    SensorDataPost:
+      description: The new sensor data to add.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/SensorDataPost"
 
   responses:
     SensorsResponse:
@@ -88,15 +116,23 @@ components:
             $ref: "#/components/schemas/Sensor"
 
     SensorsDataResponse:
-      description: Sensors response.
+      description: Sensors data response.
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/SensorsDataResponse"
 
+    SensorDataResponse:
+      description: Sensor data response.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/SensorData"
+
   schemas:
     Error:
       $ref: "../common/openapi.yaml#/components/schemas/Error"
+
     Sensor:
       type: object
       description: Sensor specific information.
@@ -168,6 +204,12 @@ components:
     SensorData:
       type: object
       description: Sensor climate data.
+      required:
+        - id
+        - sensorId
+        - temperature
+        - humidity
+        - readingTime
       properties:
         id:
           type: integer
@@ -183,4 +225,21 @@ components:
           format: float
         readingTime:
           type: string
-          format: date-time
+
+    SensorDataPost:
+      type: object
+      description: Sensor post climate data.
+      required:
+        - sensorId
+        - temperature
+        - humidity
+      properties:
+        sensorId:
+          type: integer
+          format: int64
+        temperature:
+          type: number
+          format: float
+        humidity:
+          type: number
+          format: float

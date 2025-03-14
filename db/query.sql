@@ -1,3 +1,11 @@
+-- name: CreateUser :one
+INSERT INTO users (
+  name, email
+) VALUES (
+  $1, $2
+)
+RETURNING *;
+
 -- name: ListUsers :many
 SELECT * FROM users
 ORDER BY id
@@ -7,17 +15,9 @@ LIMIT $1 OFFSET $2;
 SELECT * FROM users
 WHERE id = $1 LIMIT 1;
 
--- name: CreateUser :one
-INSERT INTO users (
-  name, email
-) VALUES (
-  $1, $2
-)
-RETURNING *;
-
 -- name: UpdateUser :one
 UPDATE users
-set 
+SET
   name = $2,
   email = $3
 WHERE id = $1
@@ -26,6 +26,22 @@ RETURNING *;
 -- name: DeleteUser :exec
 DELETE FROM users
 WHERE id = $1;
+
+-- name: CreateSensor :one
+INSERT INTO sensors (
+  user_id, name, type, mac_address
+) VALUES (
+  $1, $2, $3, $4
+)
+RETURNING *;
+
+-- name: UpdateSensor :one
+UPDATE sensors
+SET
+  name = $2,
+  type = $3
+WHERE id = $1
+RETURNING *;
 
 -- name: ListSensors :many
 SELECT * FROM sensors
@@ -36,11 +52,15 @@ LIMIT $1 OFFSET $2;
 SELECT * FROM sensors
 WHERE id = $1 LIMIT 1;
 
--- name: CreateSensor :one
-INSERT INTO sensors (
-  user_id, name, type, mac_address
+-- name: GetSensorByMAC :one
+SELECT * FROM sensors
+WHERE mac_address = $1 LIMIT 1;
+
+-- name: CreateSensorData :one
+INSERT INTO sensor_data (
+  sensor_id, temperature,
+  humidity
 ) VALUES (
-  $1, $2, $3, $4
+  $1, $2, $3
 )
 RETURNING *;
-

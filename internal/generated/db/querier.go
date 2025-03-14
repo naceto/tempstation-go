@@ -10,12 +10,15 @@ import (
 
 type Querier interface {
 	CreateSensor(ctx context.Context, arg CreateSensorParams) (Sensor, error)
+	CreateSensorData(ctx context.Context, arg CreateSensorDataParams) (SensorDatum, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	DeleteUser(ctx context.Context, id int64) error
 	GetSensor(ctx context.Context, id int64) (Sensor, error)
+	GetSensorByMAC(ctx context.Context, macAddress string) (Sensor, error)
 	GetUser(ctx context.Context, id int64) (User, error)
 	ListSensors(ctx context.Context, arg ListSensorsParams) ([]Sensor, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error)
+	UpdateSensor(ctx context.Context, arg UpdateSensorParams) (Sensor, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 }
 

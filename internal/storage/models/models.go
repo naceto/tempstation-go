@@ -59,13 +59,10 @@ type SensorData struct {
 	Temperature float32
 	Humidity    float32
 	ReadingTime time.Time
-	MacAddress  string
 }
 
 type CreateSensorData struct {
 	SensorID    int64
 	Temperature float32
 	Humidity    float32
-	ReadingTime time.Time
-	MacAddress  string
 }

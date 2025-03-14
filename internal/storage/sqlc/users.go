@@ -10,7 +10,7 @@ import (
 	"github.com/naceto/tempstation/internal/storage/models"
 )
 
-var ErrUserNotFound = errors.new("user not found")
+var ErrUserNotFound = errors.New("user not found")
 
 // CreateUser creates a new user in the storage. It first validates the input parameters
 // using the validation.UserParams function, and if the validation passes, it calls

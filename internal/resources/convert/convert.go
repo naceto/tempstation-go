@@ -1,6 +1,8 @@
 package convert
 
 import (
+	"time"
+
 	api "github.com/naceto/tempstation/internal/generated/api/sensors"
 	apiS "github.com/naceto/tempstation/internal/generated/api/sensors"
 	apiU "github.com/naceto/tempstation/internal/generated/api/users"
@@ -12,6 +14,7 @@ import (
 // goverter:extend ListUsersAPIFromStorageExtend
 // goverter:extend ListSensorsAPIFromStorage
 // goverter:enum:unknown @ignore
+// goverter:extend ConvertTimeToString
 type Convert interface {
 	// goverter:useZeroValueOnPointerInconsistency
 	// goverter:map Body.Name Name
@@ -45,7 +48,7 @@ type Convert interface {
 	// goverter:map Body.UserId UserID
 	// goverter:map Body.Name Name
 	// goverter:map Body.Type Type
-	PostSensorsAPIToStorage(input api.PostV1SensorsRequestObject) *models.CreateSensor
+	PostSensorAPIToStorage(input api.PostV1SensorsRequestObject) *models.CreateSensor
 
 	// goverter:map . SensorResponseJSONResponse
 	PostSensorAPIFromStorage(input *models.Sensor) *apiS.PostV1Sensors200JSONResponse
@@ -57,6 +60,20 @@ type Convert interface {
 
 	// goverter:map . SensorResponseJSONResponse
 	GetSensorAPIFromStorage(input *models.Sensor) *apiS.GetV1SensorsId200JSONResponse
+
+	// goverter:useZeroValueOnPointerInconsistency
+	// goverter:map Body.SensorId SensorID
+	// goverter:map Body.Temperature Temperature
+	// goverter:map Body.Humidity Humidity
+	PostSensorDataAPIToStorage(input apiS.PostV1SensorsIdDataRequestObject) *models.CreateSensorData
+
+	// goverter:map . SensorDataResponseJSONResponse
+	SensorDataAPIFromStorage(input *models.SensorData) *apiS.PostV1SensorsIdData200JSONResponse
+
+	// goverter:map ID Id
+	// goverter:map SensorID SensorId
+	// goverter:map ReadingTime | ConvertTimeToString
+	SensorDataAPIFromStorageEmbedded(input models.SensorData) apiS.SensorDataResponseJSONResponse
 }
 
 func ListUsersAPIFromStorageExtend(input []*models.User) apiU.GetV1Users200JSONResponse {
@@ -93,4 +110,8 @@ func ListSensorsAPIFromStorage(input []*models.Sensor) apiS.GetV1Sensors200JSONR
 			Sensors: sensors,
 		},
 	}
+}
+
+func ConvertTimeToString(input time.Time) string {
+	return input.Format(time.RFC3339)
 }

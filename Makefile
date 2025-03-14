@@ -22,7 +22,7 @@ tern:
 	POSTGRES_PASSWORD=$(POSTGRES_PASSWORD) tern migrate
 
 .PHONY: new-migration
-new-tern-migration:
+new-migration:
 	@echo "Running tern with POSTGRES_PASSWORD=$(POSTGRES_PASSWORD)"
 	@cd db/migrations && \
 	POSTGRES_PASSWORD=$(POSTGRES_PASSWORD) tern new $(name)

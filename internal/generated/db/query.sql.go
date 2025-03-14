@@ -43,6 +43,35 @@ func (q *Queries) CreateSensor(ctx context.Context, arg CreateSensorParams) (Sen
 	return i, err
 }
 
+const createSensorData = `-- name: CreateSensorData :one
+INSERT INTO sensor_data (
+  sensor_id, temperature,
+  humidity
+) VALUES (
+  $1, $2, $3
+)
+RETURNING id, sensor_id, temperature, humidity, reading_time
+`
+
+type CreateSensorDataParams struct {
+	SensorID    int64
+	Temperature float32
+	Humidity    float32
+}
+
+func (q *Queries) CreateSensorData(ctx context.Context, arg CreateSensorDataParams) (SensorDatum, error) {
+	row := q.db.QueryRow(ctx, createSensorData, arg.SensorID, arg.Temperature, arg.Humidity)
+	var i SensorDatum
+	err := row.Scan(
+		&i.ID,
+		&i.SensorID,
+		&i.Temperature,
+		&i.Humidity,
+		&i.ReadingTime,
+	)
+	return i, err
+}
+
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (
   name, email
@@ -81,6 +110,24 @@ WHERE id = $1 LIMIT 1
 
 func (q *Queries) GetSensor(ctx context.Context, id int64) (Sensor, error) {
 	row := q.db.QueryRow(ctx, getSensor, id)
+	var i Sensor
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Name,
+		&i.Type,
+		&i.MacAddress,
+	)
+	return i, err
+}
+
+const getSensorByMAC = `-- name: GetSensorByMAC :one
+SELECT id, user_id, name, type, mac_address FROM sensors
+WHERE mac_address = $1 LIMIT 1
+`
+
+func (q *Queries) GetSensorByMAC(ctx context.Context, macAddress string) (Sensor, error) {
+	row := q.db.QueryRow(ctx, getSensorByMAC, macAddress)
 	var i Sensor
 	err := row.Scan(
 		&i.ID,
@@ -172,9 +219,37 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, e
 	return items, nil
 }
 
+const updateSensor = `-- name: UpdateSensor :one
+UPDATE sensors
+SET
+  name = $2,
+  type = $3
+WHERE id = $1
+RETURNING id, user_id, name, type, mac_address
+`
+
+type UpdateSensorParams struct {
+	ID   int64
+	Name string
+	Type SensorType
+}
+
+func (q *Queries) UpdateSensor(ctx context.Context, arg UpdateSensorParams) (Sensor, error) {
+	row := q.db.QueryRow(ctx, updateSensor, arg.ID, arg.Name, arg.Type)
+	var i Sensor
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Name,
+		&i.Type,
+		&i.MacAddress,
+	)
+	return i, err
+}
+
 const updateUser = `-- name: UpdateUser :one
 UPDATE users
-set 
+SET
   name = $2,
   email = $3
 WHERE id = $1
