@@ -52,6 +52,27 @@ func (c *ConvertImpl) CreateUserModelToDB(source *models.CreateUser) db.CreateUs
 	}
 	return dbCreateUserParams
 }
+func (c *ConvertImpl) GetSensorDataFromDB(source []db.SensorDatum) []*models.SensorData {
+	var pModelsSensorDataList []*models.SensorData
+	if source != nil {
+		pModelsSensorDataList = make([]*models.SensorData, len(source))
+		for i := 0; i < len(source); i++ {
+			pModelsSensorDataList[i] = c.CreateSensorDataModelFromDB(source[i])
+		}
+	}
+	return pModelsSensorDataList
+}
+func (c *ConvertImpl) GetSensorDataParamsToDB(source *models.GetSensorDataParams) db.GetSensorDataParams {
+	var dbGetSensorDataParams db.GetSensorDataParams
+	if source != nil {
+		var dbGetSensorDataParams2 db.GetSensorDataParams
+		dbGetSensorDataParams2.ID = (*source).SensorID
+		dbGetSensorDataParams2.Start = ConvertTimeToTimestamptz((*source).Start)
+		dbGetSensorDataParams2.End = ConvertTimeToTimestamptzPointer((*source).End)
+		dbGetSensorDataParams = dbGetSensorDataParams2
+	}
+	return dbGetSensorDataParams
+}
 func (c *ConvertImpl) SensorModelFromDB(source db.Sensor) *models.Sensor {
 	var modelsSensor models.Sensor
 	modelsSensor.ID = source.ID

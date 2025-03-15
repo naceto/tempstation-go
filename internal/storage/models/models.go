@@ -66,3 +66,9 @@ type CreateSensorData struct {
 	Temperature float32
 	Humidity    float32
 }
+
+type GetSensorDataParams struct {
+	SensorID int64
+	Start    time.Time
+	End      *time.Time
+}

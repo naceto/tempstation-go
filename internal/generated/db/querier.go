@@ -15,6 +15,7 @@ type Querier interface {
 	DeleteUser(ctx context.Context, id int64) error
 	GetSensor(ctx context.Context, id int64) (Sensor, error)
 	GetSensorByMAC(ctx context.Context, macAddress string) (Sensor, error)
+	GetSensorData(ctx context.Context, arg GetSensorDataParams) ([]SensorDatum, error)
 	GetUser(ctx context.Context, id int64) (User, error)
 	ListSensors(ctx context.Context, arg ListSensorsParams) ([]Sensor, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error)

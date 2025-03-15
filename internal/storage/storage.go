@@ -21,4 +21,5 @@ type Storage interface {
 
 	// SensorData
 	CreateSensorData(ctx context.Context, sensorData *models.CreateSensorData) (*models.SensorData, error)
+	GetSensorData(ctx context.Context, params *models.GetSensorDataParams) ([]*models.SensorData, error)
 }

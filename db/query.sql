@@ -64,3 +64,8 @@ INSERT INTO sensor_data (
   $1, $2, $3
 )
 RETURNING *;
+
+-- name: GetSensorData :many
+SELECT * FROM sensor_data
+WHERE sensor_id = @id AND reading_time BETWEEN @start AND sqlc.arg('end');
+

@@ -63,6 +63,38 @@ paths:
         "500":
           $ref: "../common/openapi.yaml#/components/responses/ErrorResponse"
   /v1/sensors/{id}/data:
+    get:
+      tags:
+        - sensors
+      summary: Get sensor data.
+      parameters:
+        - name: id
+          in: path
+          description: Sensor ID
+          required: true
+          schema:
+            $ref: "../common/openapi.yaml#/components/schemas/ID"
+        - name: start
+          in: query
+          description: A start datetime for the returned data.
+          required: true
+          schema:
+            type: string
+            format: date-time
+        - name: end
+          in: query
+          description: A optional end datetime for the returned data.
+          required: false
+          schema:
+            type: string
+            format: date-time
+      responses:
+        "200":
+          $ref: "#/components/responses/SensorsDataResponse"
+        "400":
+          $ref: "../common/openapi.yaml#/components/responses/ErrorResponse"
+        "500":
+          $ref: "../common/openapi.yaml#/components/responses/ErrorResponse"
     post:
       tags:
         - sensors
@@ -194,9 +226,9 @@ components:
       type: object
       description: List of sensor data.
       required:
-        - sensors
+        - data
       properties:
-        sensors:
+        data:
           type: array
           items:
             $ref: "#/components/schemas/SensorData"

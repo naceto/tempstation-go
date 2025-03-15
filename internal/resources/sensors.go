@@ -63,6 +63,18 @@ func (s *Sensors) GetV1SensorsId(ctx context.Context, request api.GetV1SensorsId
 	return response, nil
 }
 
+func (s *Sensors) GetV1SensorsIdData(ctx context.Context, request api.GetV1SensorsIdDataRequestObject) (api.GetV1SensorsIdDataResponseObject, error) {
+	params := s.convert.GetSensorDataAPIToStorage(request)
+	data, err := s.store.GetSensorData(ctx, params)
+	if err != nil {
+		s.log.Error("resources.GetV1SensorsIdData", "store.GetSensorData error", err)
+		return nil, err
+	}
+
+	response := s.convert.GetSensorDataAPIFromStorage(data)
+	return response, nil
+}
+
 // (POST /v1/sensors/{id}/data)
 func (s *Sensors) PostV1SensorsIdData(ctx context.Context, request api.PostV1SensorsIdDataRequestObject) (api.PostV1SensorsIdDataResponseObject, error) {
 	sd := s.convert.PostSensorDataAPIToStorage(request)

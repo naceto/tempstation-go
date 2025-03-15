@@ -7,6 +7,8 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createSensor = `-- name: CreateSensor :one
@@ -137,6 +139,43 @@ func (q *Queries) GetSensorByMAC(ctx context.Context, macAddress string) (Sensor
 		&i.MacAddress,
 	)
 	return i, err
+}
+
+const getSensorData = `-- name: GetSensorData :many
+SELECT id, sensor_id, temperature, humidity, reading_time FROM sensor_data
+WHERE sensor_id = $1 AND reading_time BETWEEN $2 AND $3
+`
+
+type GetSensorDataParams struct {
+	ID    int64
+	Start pgtype.Timestamptz
+	End   pgtype.Timestamptz
+}
+
+func (q *Queries) GetSensorData(ctx context.Context, arg GetSensorDataParams) ([]SensorDatum, error) {
+	rows, err := q.db.Query(ctx, getSensorData, arg.ID, arg.Start, arg.End)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []SensorDatum
+	for rows.Next() {
+		var i SensorDatum
+		if err := rows.Scan(
+			&i.ID,
+			&i.SensorID,
+			&i.Temperature,
+			&i.Humidity,
+			&i.ReadingTime,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getUser = `-- name: GetUser :one

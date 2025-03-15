@@ -20,6 +20,16 @@ func (c *ConvertImpl) GetSensorAPIFromStorage(source *models.Sensor) *sensors.Ge
 	}
 	return pApiGetV1SensorsId200JSONResponse
 }
+func (c *ConvertImpl) GetSensorDataAPIFromStorage(source []*models.SensorData) sensors.GetV1SensorsIdData200JSONResponse {
+	return GetSensorDataAPIFromStorage(source)
+}
+func (c *ConvertImpl) GetSensorDataAPIToStorage(source sensors.GetV1SensorsIdDataRequestObject) *models.GetSensorDataParams {
+	var modelsGetSensorDataParams models.GetSensorDataParams
+	modelsGetSensorDataParams.SensorID = source.Id
+	modelsGetSensorDataParams.Start = ConvertTime(source.Params.Start)
+	modelsGetSensorDataParams.End = ConvertTimePointer(source.Params.End)
+	return &modelsGetSensorDataParams
+}
 func (c *ConvertImpl) GetUserAPIFromStorage(source *models.User) *users.GetV1UsersId200JSONResponse {
 	var pApiGetV1UsersId200JSONResponse *users.GetV1UsersId200JSONResponse
 	if source != nil {

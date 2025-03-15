@@ -15,6 +15,9 @@ import (
 // goverter:extend ListSensorsAPIFromStorage
 // goverter:enum:unknown @ignore
 // goverter:extend ConvertTimeToString
+// goverter:extend ConvertTime
+// goverter:extend ConvertTimePointer
+// goverter:extend GetSensorDataAPIFromStorage
 type Convert interface {
 	// goverter:useZeroValueOnPointerInconsistency
 	// goverter:map Body.Name Name
@@ -74,6 +77,13 @@ type Convert interface {
 	// goverter:map SensorID SensorId
 	// goverter:map ReadingTime | ConvertTimeToString
 	SensorDataAPIFromStorageEmbedded(input models.SensorData) apiS.SensorDataResponseJSONResponse
+
+	// goverter:map Id SensorID
+	// goverter:map Params.Start Start | ConvertTime
+	// goverter:map Params.End End | ConvertTimePointer
+	GetSensorDataAPIToStorage(input apiS.GetV1SensorsIdDataRequestObject) *models.GetSensorDataParams
+
+	GetSensorDataAPIFromStorage(input []*models.SensorData) apiS.GetV1SensorsIdData200JSONResponse
 }
 
 func ListUsersAPIFromStorageExtend(input []*models.User) apiU.GetV1Users200JSONResponse {
@@ -114,4 +124,31 @@ func ListSensorsAPIFromStorage(input []*models.Sensor) apiS.GetV1Sensors200JSONR
 
 func ConvertTimeToString(input time.Time) string {
 	return input.Format(time.RFC3339)
+}
+
+func ConvertTime(t time.Time) time.Time {
+	return t
+}
+
+func ConvertTimePointer(t *time.Time) *time.Time {
+	return t
+}
+
+func GetSensorDataAPIFromStorage(input []*models.SensorData) apiS.GetV1SensorsIdData200JSONResponse {
+	data := make([]apiS.SensorData, 0, len(input))
+	for _, sd := range input {
+		data = append(data, apiS.SensorData{
+			Id:          sd.ID,
+			SensorId:    sd.SensorID,
+			Temperature: sd.Temperature,
+			Humidity:    sd.Humidity,
+			ReadingTime: sd.ReadingTime.Format(time.RFC3339),
+		})
+	}
+
+	return apiS.GetV1SensorsIdData200JSONResponse{
+		SensorsDataResponseJSONResponse: apiS.SensorsDataResponseJSONResponse{
+			Data: data,
+		},
+	}
 }

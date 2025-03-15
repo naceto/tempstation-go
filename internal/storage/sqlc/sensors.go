@@ -3,6 +3,7 @@ package sqlc
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/naceto/tempstation/internal/generated/db"
 	"github.com/naceto/tempstation/internal/storage/models"
@@ -56,4 +57,20 @@ func (s *storage) CreateSensorData(ctx context.Context, data *models.CreateSenso
 
 	modelSensorData := s.convert.CreateSensorDataModelFromDB(sd)
 	return modelSensorData, nil
+}
+
+func (s *storage) GetSensorData(ctx context.Context, params *models.GetSensorDataParams) ([]*models.SensorData, error) {
+	if params.End == nil {
+		now := time.Now()
+		params.End = &now
+	}
+
+	p := s.convert.GetSensorDataParamsToDB(params)
+	data, err := s.db.GetSensorData(ctx, p)
+	if err != nil {
+		return nil, fmt.Errorf(FormatStorageError, err)
+	}
+
+	sensorDataList := s.convert.GetSensorDataFromDB(data)
+	return sensorDataList, nil
 }
