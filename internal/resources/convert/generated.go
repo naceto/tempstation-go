@@ -50,6 +50,10 @@ func (c *ConvertImpl) ListSensorsAPIToStorage(source sensors.GetV1SensorsRequest
 	if source.Params.Offset != nil {
 		modelsListSensorsParams.Offset = *source.Params.Offset
 	}
+	if source.Params.Mac != nil {
+		xstring := *source.Params.Mac
+		modelsListSensorsParams.Mac = &xstring
+	}
 	return &modelsListSensorsParams
 }
 func (c *ConvertImpl) ListUsersAPIFromStorage(source []*models.User) users.GetV1Users200JSONResponse {

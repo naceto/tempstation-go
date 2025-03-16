@@ -43,6 +43,7 @@ type Convert interface {
 	// goverter:useZeroValueOnPointerInconsistency
 	// goverter:map Params.Offset Offset
 	// goverter:map Params.Limit Limit
+	// goverter:map Params.Mac Mac
 	ListSensorsAPIToStorage(input apiS.GetV1SensorsRequestObject) *models.ListSensorsParams
 	ListSensorsAPIFromStorage(input []*models.Sensor) apiS.GetV1Sensors200JSONResponse
 

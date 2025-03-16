@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/naceto/tempstation/internal/generated/db"
 	"github.com/naceto/tempstation/internal/storage/models"
 )
@@ -31,14 +32,22 @@ func (s *storage) GetSensor(ctx context.Context, id int64) (*models.Sensor, erro
 }
 
 func (s *storage) ListSensors(ctx context.Context, params *models.ListSensorsParams) ([]*models.Sensor, error) {
-	var limit int32 = DefaultLimit
+	limit := DefaultLimit
 	if params.Limit != 0 {
 		limit = params.Limit
+	}
+
+	var mac pgtype.Text
+	if params.Mac != nil {
+		s.log.Error("Here", "mac", params.Mac)
+		mac.String = *params.Mac
+		mac.Valid = true
 	}
 
 	sensors, err := s.db.ListSensors(ctx, db.ListSensorsParams{
 		Limit:  limit,
 		Offset: params.Offset,
+		Mac:    mac,
 	})
 	if err != nil {
 		return nil, fmt.Errorf(FormatStorageError, err)

@@ -24,6 +24,11 @@ paths:
             type: integer
             format: int32
           description: The numbers of items to return
+        - in: query
+          name: mac
+          schema:
+            type: string
+            pattern: "^([[:xdigit:]]{2}(:[[:xdigit:]]{2}){5}|[[:xdigit:]]{2}(-[[:xdigit:]]{2}){5})$"
       responses:
         "200":
           $ref: "#/components/responses/SensorsResponse"
@@ -201,6 +206,7 @@ components:
           type: string
         mac:
           type: string
+          pattern: "^([[:xdigit:]]{2}(:[[:xdigit:]]{2}){5}|[[:xdigit:]]{2}(-[[:xdigit:]]{2}){5})$"
         type:
           $ref: "#/components/schemas/SensorType"
 

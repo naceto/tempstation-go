@@ -192,6 +192,7 @@ func (q *Queries) GetUser(ctx context.Context, id int64) (User, error) {
 
 const listSensors = `-- name: ListSensors :many
 SELECT id, user_id, name, type, mac_address FROM sensors
+WHERE (mac_address = $3 OR $3 IS NULL)
 ORDER BY id
 LIMIT $1 OFFSET $2
 `
@@ -199,10 +200,11 @@ LIMIT $1 OFFSET $2
 type ListSensorsParams struct {
 	Limit  int32
 	Offset int32
+	Mac    pgtype.Text
 }
 
 func (q *Queries) ListSensors(ctx context.Context, arg ListSensorsParams) ([]Sensor, error) {
-	rows, err := q.db.Query(ctx, listSensors, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, listSensors, arg.Limit, arg.Offset, arg.Mac)
 	if err != nil {
 		return nil, err
 	}

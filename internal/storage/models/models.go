@@ -45,6 +45,7 @@ type CreateSensor struct {
 type ListSensorsParams struct {
 	Limit  int32
 	Offset int32
+	Mac    *string
 }
 
 type ListUsersParams struct {

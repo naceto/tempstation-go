@@ -45,6 +45,7 @@ RETURNING *;
 
 -- name: ListSensors :many
 SELECT * FROM sensors
+WHERE (mac_address = sqlc.narg('mac') OR sqlc.narg('mac') IS NULL)
 ORDER BY id
 LIMIT $1 OFFSET $2;
 
