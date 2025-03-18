@@ -39,7 +39,6 @@ func (s *storage) ListSensors(ctx context.Context, params *models.ListSensorsPar
 
 	var mac pgtype.Text
 	if params.Mac != nil {
-		s.log.Error("Here", "mac", params.Mac)
 		mac.String = *params.Mac
 		mac.Valid = true
 	}
