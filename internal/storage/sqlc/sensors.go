@@ -63,8 +63,8 @@ func (s *storage) CreateSensorData(ctx context.Context, data *models.CreateSenso
 		return nil, fmt.Errorf(FormatStorageError, err)
 	}
 
-	modelSensorData := s.convert.CreateSensorDataModelFromDB(sd)
-	return modelSensorData, nil
+	sensorData := s.convert.CreateSensorDataModelFromDB(sd)
+	return sensorData, nil
 }
 
 func (s *storage) GetSensorData(ctx context.Context, params *models.GetSensorDataParams) ([]*models.SensorData, error) {
