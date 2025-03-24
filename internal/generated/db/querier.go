@@ -18,7 +18,7 @@ type Querier interface {
 	GetSensorData(ctx context.Context, arg GetSensorDataParams) ([]SensorDatum, error)
 	GetUser(ctx context.Context, id int64) (User, error)
 	ListSensors(ctx context.Context, arg ListSensorsParams) ([]Sensor, error)
-	ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error)
+	ListUsers(ctx context.Context, arg ListUsersParams) ([]ListUsersRow, error)
 	UpdateSensor(ctx context.Context, arg UpdateSensorParams) (Sensor, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 }

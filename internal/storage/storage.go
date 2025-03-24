@@ -9,7 +9,7 @@ import (
 type Storage interface {
 	// User
 	CreateUser(ctx context.Context, user *models.CreateUser) (*models.User, error)
-	ListUsers(ctx context.Context, params *models.ListUsersParams) ([]*models.User, error)
+	ListUsers(ctx context.Context, params *models.ListUsersParams) ([]*models.ListUser, error)
 	GetUser(ctx context.Context, id int64) (*models.User, error)
 	UpdateUser(ctx context.Context, user *models.UpdateUser) (*models.User, error)
 	DeleteUser(ctx context.Context, id int64) error

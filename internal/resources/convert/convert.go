@@ -22,6 +22,7 @@ type Convert interface {
 	// goverter:useZeroValueOnPointerInconsistency
 	// goverter:map Body.Name Name
 	// goverter:map Body.Email Email
+	// goverter:ignore Password
 	PostUserAPIToStorage(input *apiU.PostV1UsersRequestObject) *models.CreateUser
 
 	// goverter:map . UserResponseJSONResponse
@@ -38,7 +39,7 @@ type Convert interface {
 	// goverter:map Params.Limit Limit
 	ListUsersAPIToStorage(input apiU.GetV1UsersRequestObject) *models.ListUsersParams
 
-	ListUsersAPIFromStorage(input []*models.User) apiU.GetV1Users200JSONResponse
+	ListUsersAPIFromStorage(input []*models.ListUser) apiU.GetV1Users200JSONResponse
 
 	// goverter:useZeroValueOnPointerInconsistency
 	// goverter:map Params.Offset Offset
@@ -87,7 +88,7 @@ type Convert interface {
 	GetSensorDataAPIFromStorage(input []*models.SensorData) apiS.GetV1SensorsIdData200JSONResponse
 }
 
-func ListUsersAPIFromStorageExtend(input []*models.User) apiU.GetV1Users200JSONResponse {
+func ListUsersAPIFromStorageExtend(input []*models.ListUser) apiU.GetV1Users200JSONResponse {
 	users := make([]apiU.User, 0, len(input))
 	for _, u := range input {
 		users = append(users, apiU.User{

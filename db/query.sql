@@ -1,13 +1,14 @@
 -- name: CreateUser :one
 INSERT INTO users (
-  name, email
+  name, email, password
 ) VALUES (
-  $1, $2
+  $1, $2, $3
 )
 RETURNING *;
 
 -- name: ListUsers :many
-SELECT * FROM users
+SELECT id, name, email 
+FROM users
 ORDER BY id
 LIMIT $1 OFFSET $2;
 
@@ -19,7 +20,8 @@ WHERE id = $1 LIMIT 1;
 UPDATE users
 SET
   name = $2,
-  email = $3
+  email = $3,
+  password = COALESCE($4, password)
 WHERE id = $1
 RETURNING *;
 

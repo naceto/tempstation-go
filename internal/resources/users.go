@@ -2,12 +2,14 @@ package resources
 
 import (
 	"context"
+	"log"
 	"log/slog"
 
 	api "github.com/naceto/tempstation/internal/generated/api/users"
 	"github.com/naceto/tempstation/internal/resources/convert"
 	"github.com/naceto/tempstation/internal/resources/validate"
 	"github.com/naceto/tempstation/internal/storage"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var _ api.StrictServerInterface = &Users{}
@@ -59,6 +61,12 @@ func (u *Users) PostV1Users(ctx context.Context, request api.PostV1UsersRequestO
 		u.log.Error("resources.PostV1Users", "validate.CreateUser error", err)
 		return nil, err
 	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(request.Body.Password), bcrypt.DefaultCost)
+	if err != nil {
+		log.Fatal(err)
+	}
+	createUser.Password = hashedPassword
 
 	user, err := u.store.CreateUser(ctx, createUser)
 	if err != nil {

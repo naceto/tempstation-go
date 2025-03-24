@@ -1,9 +1,9 @@
-version: '3.3'
-
+version: "3.3"
 
 services:
   postgres:
     image: postgres
+    restart: unless-stopped
     ports:
       - 5432:5432
     volumes:

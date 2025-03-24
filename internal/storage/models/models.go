@@ -5,12 +5,21 @@ import (
 )
 
 type CreateUser struct {
-	Name  string
-	Email string
+	Name     string
+	Email    string
+	Password []byte
 }
 
 // User represents a user in the system.
 type User struct {
+	ID       int64
+	Name     string
+	Email    string
+	Password []byte
+}
+
+// ListUser represents a user in the system.
+type ListUser struct {
 	ID    int64
 	Name  string
 	Email string

@@ -48,6 +48,12 @@ func (c *ConvertImpl) CreateUserModelToDB(source *models.CreateUser) db.CreateUs
 		var dbCreateUserParams2 db.CreateUserParams
 		dbCreateUserParams2.Name = (*source).Name
 		dbCreateUserParams2.Email = (*source).Email
+		if (*source).Password != nil {
+			dbCreateUserParams2.Password = make([]uint8, len((*source).Password))
+			for i := 0; i < len((*source).Password); i++ {
+				dbCreateUserParams2.Password[i] = (*source).Password[i]
+			}
+		}
 		dbCreateUserParams = dbCreateUserParams2
 	}
 	return dbCreateUserParams
@@ -97,17 +103,30 @@ func (c *ConvertImpl) UserModelFromDB(source db.User) *models.User {
 	modelsUser.ID = source.ID
 	modelsUser.Name = source.Name
 	modelsUser.Email = source.Email
-	return &modelsUser
-}
-func (c *ConvertImpl) UserModelsFromDB(source []db.User) []*models.User {
-	var pModelsUserList []*models.User
-	if source != nil {
-		pModelsUserList = make([]*models.User, len(source))
-		for i := 0; i < len(source); i++ {
-			pModelsUserList[i] = c.UserModelFromDB(source[i])
+	if source.Password != nil {
+		modelsUser.Password = make([]uint8, len(source.Password))
+		for i := 0; i < len(source.Password); i++ {
+			modelsUser.Password[i] = source.Password[i]
 		}
 	}
-	return pModelsUserList
+	return &modelsUser
+}
+func (c *ConvertImpl) UserModelsFromDB(source []db.ListUsersRow) []*models.ListUser {
+	var pModelsListUserList []*models.ListUser
+	if source != nil {
+		pModelsListUserList = make([]*models.ListUser, len(source))
+		for i := 0; i < len(source); i++ {
+			pModelsListUserList[i] = c.dbListUsersRowToPModelsListUser(source[i])
+		}
+	}
+	return pModelsListUserList
+}
+func (c *ConvertImpl) dbListUsersRowToPModelsListUser(source db.ListUsersRow) *models.ListUser {
+	var modelsListUser models.ListUser
+	modelsListUser.ID = source.ID
+	modelsListUser.Name = source.Name
+	modelsListUser.Email = source.Email
+	return &modelsListUser
 }
 func (c *ConvertImpl) dbSensorTypeToModelsSensorType(source db.SensorType) models.SensorType {
 	var modelsSensorType models.SensorType

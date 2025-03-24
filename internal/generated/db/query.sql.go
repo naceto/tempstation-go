@@ -76,22 +76,28 @@ func (q *Queries) CreateSensorData(ctx context.Context, arg CreateSensorDataPara
 
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (
-  name, email
+  name, email, password
 ) VALUES (
-  $1, $2
+  $1, $2, $3
 )
-RETURNING id, name, email
+RETURNING id, name, email, password
 `
 
 type CreateUserParams struct {
-	Name  string
-	Email string
+	Name     string
+	Email    string
+	Password []byte
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
-	row := q.db.QueryRow(ctx, createUser, arg.Name, arg.Email)
+	row := q.db.QueryRow(ctx, createUser, arg.Name, arg.Email, arg.Password)
 	var i User
-	err := row.Scan(&i.ID, &i.Name, &i.Email)
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Email,
+		&i.Password,
+	)
 	return i, err
 }
 
@@ -179,14 +185,19 @@ func (q *Queries) GetSensorData(ctx context.Context, arg GetSensorDataParams) ([
 }
 
 const getUser = `-- name: GetUser :one
-SELECT id, name, email FROM users
+SELECT id, name, email, password FROM users
 WHERE id = $1 LIMIT 1
 `
 
 func (q *Queries) GetUser(ctx context.Context, id int64) (User, error) {
 	row := q.db.QueryRow(ctx, getUser, id)
 	var i User
-	err := row.Scan(&i.ID, &i.Name, &i.Email)
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Email,
+		&i.Password,
+	)
 	return i, err
 }
 
@@ -230,7 +241,8 @@ func (q *Queries) ListSensors(ctx context.Context, arg ListSensorsParams) ([]Sen
 }
 
 const listUsers = `-- name: ListUsers :many
-SELECT id, name, email FROM users
+SELECT id, name, email 
+FROM users
 ORDER BY id
 LIMIT $1 OFFSET $2
 `
@@ -240,15 +252,21 @@ type ListUsersParams struct {
 	Offset int32
 }
 
-func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error) {
+type ListUsersRow struct {
+	ID    int64
+	Name  string
+	Email string
+}
+
+func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]ListUsersRow, error) {
 	rows, err := q.db.Query(ctx, listUsers, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []User
+	var items []ListUsersRow
 	for rows.Next() {
-		var i User
+		var i ListUsersRow
 		if err := rows.Scan(&i.ID, &i.Name, &i.Email); err != nil {
 			return nil, err
 		}
@@ -292,20 +310,32 @@ const updateUser = `-- name: UpdateUser :one
 UPDATE users
 SET
   name = $2,
-  email = $3
+  email = $3,
+  password = COALESCE($4, password)
 WHERE id = $1
-RETURNING id, name, email
+RETURNING id, name, email, password
 `
 
 type UpdateUserParams struct {
-	ID    int64
-	Name  string
-	Email string
+	ID       int64
+	Name     string
+	Email    string
+	Password []byte
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
-	row := q.db.QueryRow(ctx, updateUser, arg.ID, arg.Name, arg.Email)
+	row := q.db.QueryRow(ctx, updateUser,
+		arg.ID,
+		arg.Name,
+		arg.Email,
+		arg.Password,
+	)
 	var i User
-	err := row.Scan(&i.ID, &i.Name, &i.Email)
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Email,
+		&i.Password,
+	)
 	return i, err
 }

@@ -56,7 +56,7 @@ func (c *ConvertImpl) ListSensorsAPIToStorage(source sensors.GetV1SensorsRequest
 	}
 	return &modelsListSensorsParams
 }
-func (c *ConvertImpl) ListUsersAPIFromStorage(source []*models.User) users.GetV1Users200JSONResponse {
+func (c *ConvertImpl) ListUsersAPIFromStorage(source []*models.ListUser) users.GetV1Users200JSONResponse {
 	return ListUsersAPIFromStorageExtend(source)
 }
 func (c *ConvertImpl) ListUsersAPIToStorage(source users.GetV1UsersRequestObject) *models.ListUsersParams {

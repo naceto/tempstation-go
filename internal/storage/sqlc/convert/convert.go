@@ -18,7 +18,7 @@ type Convert interface {
 	// goverter:useZeroValueOnPointerInconsistency
 	CreateUserModelToDB(input *models.CreateUser) db.CreateUserParams
 	UserModelFromDB(input db.User) *models.User
-	UserModelsFromDB(input []db.User) []*models.User
+	UserModelsFromDB(input []db.ListUsersRow) []*models.ListUser
 
 	// goverter:useZeroValueOnPointerInconsistency
 	CreateSensorModelToDB(input *models.CreateSensor) db.CreateSensorParams

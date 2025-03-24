@@ -59,7 +59,7 @@ func (s *storage) DeleteUser(ctx context.Context, id int64) error {
 }
 
 // ListUsers returns a list of users paginated by <params>.
-func (s *storage) ListUsers(ctx context.Context, params *models.ListUsersParams) ([]*models.User, error) {
+func (s *storage) ListUsers(ctx context.Context, params *models.ListUsersParams) ([]*models.ListUser, error) {
 	var limit int32 = DefaultLimit
 	if params.Limit != 0 {
 		limit = params.Limit
