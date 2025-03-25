@@ -18,15 +18,21 @@ type User struct {
 	Password []byte
 }
 
+type UpdateUser struct {
+	ID   int64
+	Name string
+}
+
+type UpdateUserPassword struct {
+	ID          int64
+	NewPassword []byte
+}
+
 // ListUser represents a user in the system.
 type ListUser struct {
 	ID    int64
 	Name  string
 	Email string
-}
-
-type UpdateUser struct {
-	Name string
 }
 
 type SensorType string

@@ -19,11 +19,15 @@ WHERE id = $1 LIMIT 1;
 -- name: UpdateUser :one
 UPDATE users
 SET
-  name = $2,
-  email = $3,
-  password = COALESCE($4, password)
+  name = $2
 WHERE id = $1
 RETURNING *;
+
+-- name: UpdateUserPassword :exec
+UPDATE users
+SET
+  password = $2
+WHERE id = $1;
 
 -- name: DeleteUser :exec
 DELETE FROM users

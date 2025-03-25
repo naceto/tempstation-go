@@ -309,27 +309,18 @@ func (q *Queries) UpdateSensor(ctx context.Context, arg UpdateSensorParams) (Sen
 const updateUser = `-- name: UpdateUser :one
 UPDATE users
 SET
-  name = $2,
-  email = $3,
-  password = COALESCE($4, password)
+  name = $2
 WHERE id = $1
 RETURNING id, name, email, password
 `
 
 type UpdateUserParams struct {
-	ID       int64
-	Name     string
-	Email    string
-	Password []byte
+	ID   int64
+	Name string
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
-	row := q.db.QueryRow(ctx, updateUser,
-		arg.ID,
-		arg.Name,
-		arg.Email,
-		arg.Password,
-	)
+	row := q.db.QueryRow(ctx, updateUser, arg.ID, arg.Name)
 	var i User
 	err := row.Scan(
 		&i.ID,
@@ -338,4 +329,21 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		&i.Password,
 	)
 	return i, err
+}
+
+const updateUserPassword = `-- name: UpdateUserPassword :exec
+UPDATE users
+SET
+  password = $2
+WHERE id = $1
+`
+
+type UpdateUserPasswordParams struct {
+	ID       int64
+	Password []byte
+}
+
+func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error {
+	_, err := q.db.Exec(ctx, updateUserPassword, arg.ID, arg.Password)
+	return err
 }

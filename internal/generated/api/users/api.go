@@ -35,6 +35,12 @@ type User struct {
 	Name *string          `json:"name,omitempty"`
 }
 
+// UserPasswordPost Change user password.
+type UserPasswordPost struct {
+	NewPassword string `json:"newPassword"`
+	OldPassword string `json:"oldPassword"`
+}
+
 // UserPost Create user.
 type UserPost struct {
 	Email    string `json:"email"`
@@ -62,6 +68,9 @@ type GetV1UsersParams struct {
 // PostV1UsersJSONRequestBody defines body for PostV1Users for application/json ContentType.
 type PostV1UsersJSONRequestBody = UserPost
 
+// PostV1UsersIdPasswordJSONRequestBody defines body for PostV1UsersIdPassword for application/json ContentType.
+type PostV1UsersIdPasswordJSONRequestBody = UserPasswordPost
+
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 	// Get all users.
@@ -73,6 +82,9 @@ type ServerInterface interface {
 	// Get a user by ID.
 	// (GET /v1/users/{id})
 	GetV1UsersId(w http.ResponseWriter, r *http.Request, id externalRef0.ID)
+	// Update user password.
+	// (POST /v1/users/{id}/password)
+	PostV1UsersIdPassword(w http.ResponseWriter, r *http.Request, id externalRef0.ID)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -149,6 +161,31 @@ func (siw *ServerInterfaceWrapper) GetV1UsersId(w http.ResponseWriter, r *http.R
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetV1UsersId(w, r, id)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// PostV1UsersIdPassword operation middleware
+func (siw *ServerInterfaceWrapper) PostV1UsersIdPassword(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id externalRef0.ID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", r.PathValue("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PostV1UsersIdPassword(w, r, id)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -281,6 +318,7 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc("GET "+options.BaseURL+"/v1/users", wrapper.GetV1Users)
 	m.HandleFunc("POST "+options.BaseURL+"/v1/users", wrapper.PostV1Users)
 	m.HandleFunc("GET "+options.BaseURL+"/v1/users/{id}", wrapper.GetV1UsersId)
+	m.HandleFunc("POST "+options.BaseURL+"/v1/users/{id}/password", wrapper.PostV1UsersIdPassword)
 
 	return m
 }
@@ -394,6 +432,41 @@ func (response GetV1UsersId500JSONResponse) VisitGetV1UsersIdResponse(w http.Res
 	return json.NewEncoder(w).Encode(response)
 }
 
+type PostV1UsersIdPasswordRequestObject struct {
+	Id   externalRef0.ID `json:"id"`
+	Body *PostV1UsersIdPasswordJSONRequestBody
+}
+
+type PostV1UsersIdPasswordResponseObject interface {
+	VisitPostV1UsersIdPasswordResponse(w http.ResponseWriter) error
+}
+
+type PostV1UsersIdPassword204Response struct {
+}
+
+func (response PostV1UsersIdPassword204Response) VisitPostV1UsersIdPasswordResponse(w http.ResponseWriter) error {
+	w.WriteHeader(204)
+	return nil
+}
+
+type PostV1UsersIdPassword400JSONResponse struct{ externalRef0.ErrorResponse }
+
+func (response PostV1UsersIdPassword400JSONResponse) VisitPostV1UsersIdPasswordResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostV1UsersIdPassword500JSONResponse Error
+
+func (response PostV1UsersIdPassword500JSONResponse) VisitPostV1UsersIdPasswordResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
 	// Get all users.
@@ -405,6 +478,9 @@ type StrictServerInterface interface {
 	// Get a user by ID.
 	// (GET /v1/users/{id})
 	GetV1UsersId(ctx context.Context, request GetV1UsersIdRequestObject) (GetV1UsersIdResponseObject, error)
+	// Update user password.
+	// (POST /v1/users/{id}/password)
+	PostV1UsersIdPassword(ctx context.Context, request PostV1UsersIdPasswordRequestObject) (PostV1UsersIdPasswordResponseObject, error)
 }
 
 type StrictHandlerFunc = strictnethttp.StrictHTTPHandlerFunc
@@ -519,22 +595,57 @@ func (sh *strictHandler) GetV1UsersId(w http.ResponseWriter, r *http.Request, id
 	}
 }
 
+// PostV1UsersIdPassword operation middleware
+func (sh *strictHandler) PostV1UsersIdPassword(w http.ResponseWriter, r *http.Request, id externalRef0.ID) {
+	var request PostV1UsersIdPasswordRequestObject
+
+	request.Id = id
+
+	var body PostV1UsersIdPasswordJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.PostV1UsersIdPassword(ctx, request.(PostV1UsersIdPasswordRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostV1UsersIdPassword")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(PostV1UsersIdPasswordResponseObject); ok {
+		if err := validResponse.VisitPostV1UsersIdPasswordResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

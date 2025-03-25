@@ -13,6 +13,7 @@ type Storage interface {
 	GetUser(ctx context.Context, id int64) (*models.User, error)
 	UpdateUser(ctx context.Context, user *models.UpdateUser) (*models.User, error)
 	DeleteUser(ctx context.Context, id int64) error
+	UpdateUserPassword(ctx context.Context, userPassword *models.UpdateUserPassword) error
 
 	// Sensor
 	CreateSensor(ctx context.Context, sensor *models.CreateSensor) (*models.Sensor, error)

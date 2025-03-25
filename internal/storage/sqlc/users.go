@@ -42,6 +42,7 @@ func (s *storage) GetUser(ctx context.Context, id int64) (*models.User, error) {
 
 func (s *storage) UpdateUser(ctx context.Context, params *models.UpdateUser) (*models.User, error) {
 	u, err := s.db.UpdateUser(ctx, db.UpdateUserParams{
+		ID:   params.ID,
 		Name: params.Name,
 	})
 	if err != nil {
@@ -75,4 +76,16 @@ func (s *storage) ListUsers(ctx context.Context, params *models.ListUsersParams)
 
 	users := s.convert.UserModelsFromDB(u)
 	return users, nil
+}
+
+func (s *storage) UpdateUserPassword(ctx context.Context, userPassword *models.UpdateUserPassword) error {
+	err := s.db.UpdateUserPassword(ctx, db.UpdateUserPasswordParams{
+		ID:       userPassword.ID,
+		Password: userPassword.NewPassword,
+	})
+	if err != nil {
+		return fmt.Errorf(FormatStorageError, err)
+	}
+
+	return nil
 }

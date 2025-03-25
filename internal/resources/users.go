@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"log/slog"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/naceto/tempstation/internal/resources/convert"
 	"github.com/naceto/tempstation/internal/resources/validate"
 	"github.com/naceto/tempstation/internal/storage"
+	"github.com/naceto/tempstation/internal/storage/models"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -76,4 +78,34 @@ func (u *Users) PostV1Users(ctx context.Context, request api.PostV1UsersRequestO
 
 	response := u.convert.PostUserAPIFromStorage(user)
 	return response, nil
+}
+
+// (POST /v1/users/{id}/password)
+func (u *Users) PostV1UsersIdPassword(ctx context.Context, request api.PostV1UsersIdPasswordRequestObject) (api.PostV1UsersIdPasswordResponseObject, error) {
+	user, err := u.store.GetUser(ctx, request.Id)
+	if err != nil {
+		u.log.Error("resources.PostV1UsersIdPassword", "store.GetUser error", err)
+		return nil, err
+	}
+
+	if err := bcrypt.CompareHashAndPassword(user.Password, []byte(request.Body.OldPassword)); err != nil {
+		u.log.Error("resources.PostV1UsersIdPassword", "bcrypt.CompareHashAndPassword error", err)
+		return nil, fmt.Errorf("Incorrect password")
+	}
+
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(request.Body.NewPassword), bcrypt.DefaultCost)
+	if err != nil {
+		u.log.Error("resources.PostV1UsersIdPassword", "bcrypt.GenerateFromPassword error", err)
+		return nil, fmt.Errorf("Internal sever error")
+	}
+
+	err = u.store.UpdateUserPassword(ctx, &models.UpdateUserPassword{
+		ID:          request.Id,
+		NewPassword: passwordHash,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return api.PostV1UsersIdPassword204Response{}, nil
 }

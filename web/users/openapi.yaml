@@ -64,6 +64,27 @@ paths:
           $ref: "../common/openapi.yaml#/components/responses/ErrorResponse"
         "500":
           $ref: "../common/openapi.yaml#/components/responses/ErrorResponse"
+  /v1/users/{id}/password:
+    post:
+      tags:
+        - users
+      summary: Update user password.
+      parameters:
+        - name: id
+          in: path
+          description: User ID
+          required: true
+          schema:
+            $ref: "../common/openapi.yaml#/components/schemas/ID"
+      requestBody:
+        $ref: "#/components/requestBodies/UserPasswordPost"
+      responses:
+        "204":
+          description: Successfully updated
+        "400":
+          $ref: "../common/openapi.yaml#/components/responses/ErrorResponse"
+        "500":
+          $ref: "../common/openapi.yaml#/components/responses/ErrorResponse"
 
 components:
   requestBodies:
@@ -74,6 +95,14 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/UserPost"
+
+    UserPasswordPost:
+      description: Change user password request.
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/UserPasswordPost"
 
   responses:
     UserResponse:
@@ -111,6 +140,20 @@ components:
           format: password
           minLenght: 8
           maxLength: 32
+
+    UserPasswordPost:
+      type: object
+      description: Change user password.
+      required:
+        - oldPassword
+        - newPassword
+      properties:
+        oldPassword:
+          type: string
+          format: password
+        newPassword:
+          type: string
+          format: password
 
     UsersResponse:
       type: object

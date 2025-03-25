@@ -21,6 +21,7 @@ type Querier interface {
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]ListUsersRow, error)
 	UpdateSensor(ctx context.Context, arg UpdateSensorParams) (Sensor, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
+	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error
 }
 
 var _ Querier = (*Queries)(nil)
