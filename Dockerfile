@@ -5,11 +5,10 @@ COPY go.mod ./
 COPY go.sum ./
 RUN go mod download
 COPY . .
-RUN go build -o main ./cmd/tempstation/main.go
+RUN go build -ldflags="-s -w" -o main ./cmd/tempstation/main.go
 
 # Stage 2 - Run
-FROM alpine:latest
-WORKDIR /root/
+FROM scratch
 COPY --from=builder /app/main .
 EXPOSE 8080
 CMD ["./main"]
