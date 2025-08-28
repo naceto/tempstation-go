@@ -1,3 +1,4 @@
+// Package service provides the core application service layer, including server startup, dependency injection, and HTTP API routing.
 package service
 
 import (
